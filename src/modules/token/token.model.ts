@@ -15,7 +15,7 @@ export default class TokenModel extends Model<TokenModel, TTokenCreation> {
   value: string;
 
   @BelongsTo(() => UserModel)
-  user: UserModel;
+  user: UserModel | undefined;
 
   @CreatedAt
   createdAt: Date;

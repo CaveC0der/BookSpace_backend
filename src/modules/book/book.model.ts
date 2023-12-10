@@ -22,8 +22,9 @@ import { BookCreationT } from './types/book-creation.type';
 import GenreModel from '../genre/genre.model';
 import { BookGenreModel } from '../genre/book-genre.model';
 import { Logger } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { InDecrementReturnType } from '../../common/types/indecrement.return.type';
 
 @Table({ tableName: 'books' })
 export default class BookModel extends Model<BookModel, BookCreationT> {
@@ -34,12 +35,12 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
 
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.STRING, unique: true, allowNull: false })
+  @Column({ type: DataType.STRING(150), unique: true, allowNull: false })
   name: string;
 
   @ApiProperty({ type: String, nullable: true })
   @Expose()
-  @Column({ type: DataType.STRING })
+  @Column({ type: DataType.STRING(48) })
   cover: string | null;
 
   @ApiProperty({ type: String, nullable: true })
@@ -73,8 +74,10 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
   @Column({ type: DataType.SMALLINT, allowNull: false, defaultValue: 0 })
   commentsCount: number;
 
+  @ApiPropertyOptional({ type: () => UserModel })
+  @Expose()
   @BelongsTo(() => UserModel)
-  author: UserModel | null;
+  author: UserModel | undefined;
 
   @ApiProperty()
   @Expose()
@@ -136,7 +139,10 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
 
   @AfterDestroy
   static async afterDestroyHook(book: BookModel) {
-    const [_, affected] = await UserModel.decrement('booksCount', { where: { id: book.authorId }, by: 1 });
+    const [[_, affected]] = await UserModel.decrement('booksCount', {
+      where: { id: book.authorId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<UserModel>;
     if (!affected)
       Logger.error('@AfterDestroy failed', BookModel.name);
     else

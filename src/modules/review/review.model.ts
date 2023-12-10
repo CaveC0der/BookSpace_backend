@@ -15,8 +15,9 @@ import UserModel from '../user/user.model';
 import BookModel from '../book/book.model';
 import { ReviewCreationT } from './types/review-creation.type';
 import { Logger } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { InDecrementReturnType } from '../../common/types/indecrement.return.type';
 
 @Table({ tableName: 'reviews' })
 export default class ReviewModel extends Model<ReviewModel, ReviewCreationT> {
@@ -42,11 +43,13 @@ export default class ReviewModel extends Model<ReviewModel, ReviewCreationT> {
   @Column({ type: DataType.STRING(2000) })
   text: string | null;
 
+  @ApiPropertyOptional({ type: () => UserModel })
+  @Expose()
   @BelongsTo(() => UserModel)
-  user: UserModel;
+  user: UserModel | undefined;
 
   @BelongsTo(() => BookModel)
-  book: BookModel;
+  book: BookModel | undefined;
 
   @ApiProperty()
   @Expose()
@@ -71,7 +74,10 @@ export default class ReviewModel extends Model<ReviewModel, ReviewCreationT> {
       reviewsCount: newReviewsCount,
     });
 
-    const [_, affected] = await UserModel.decrement('reviewsCount', { where: { id: review.userId }, by: 1 });
+    const [[_, affected]] = await UserModel.increment('reviewsCount', {
+      where: { id: review.userId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<UserModel>; // .increment has wrong return type
     if (!affected)
       Logger.error('@AfterCreate failed', ReviewModel.name);
     else
@@ -97,8 +103,14 @@ export default class ReviewModel extends Model<ReviewModel, ReviewCreationT> {
 
   @AfterDestroy
   static async afterDestroyHook(review: ReviewModel) {
-    const [_u, usersAffected] = await UserModel.decrement('reviewsCount', { where: { id: review.userId }, by: 1 });
-    const [_b, booksAffected] = await BookModel.decrement('reviewsCount', { where: { id: review.bookId }, by: 1 });
+    const [[_u, usersAffected]] = await UserModel.decrement('reviewsCount', {
+      where: { id: review.userId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<UserModel>;
+    const [[_b, booksAffected]] = await BookModel.decrement('reviewsCount', {
+      where: { id: review.bookId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<BookModel>;
     if (!usersAffected || !booksAffected)
       Logger.error('@AfterDestroy failed', ReviewModel.name);
     else

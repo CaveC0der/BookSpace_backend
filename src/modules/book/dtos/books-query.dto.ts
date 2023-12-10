@@ -1,11 +1,23 @@
-import { IsBooleanString, IsIn, IsOptional, Min } from 'class-validator';
+import { IsBooleanString, IsIn, IsOptional, Length, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { OrderDirections } from '../../../common/constants/order-directions';
+import { Op } from 'sequelize';
 
-const orderBy = ['createdAt', 'updatedAt'];
+const modes: (keyof typeof Op)[] = ['startsWith', 'substring', 'endsWith', 'iLike'];
 
-export default class CommentsQueryDto {
+const orderBy = ['name', 'rating', 'author', 'popularity', 'createdAt', 'updatedAt'];
+
+export default class BooksQueryDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Length(1, 150)
+  query?: string;
+
+  @ApiPropertyOptional({ enum: modes })
+  @IsOptional()
+  mode?: keyof typeof Op;
+
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)

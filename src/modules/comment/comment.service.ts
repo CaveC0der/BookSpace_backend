@@ -1,10 +1,13 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import CommentModel from './comment.model';
-import { OrderItem, ValidationError } from 'sequelize';
+import { ValidationError } from 'sequelize';
 import { CommentCreationT } from './types/comment-creation.type';
 import { WhereOptions } from 'sequelize/types/model';
 import CommentsQueryDto from './dtos/comments-query.dto';
+import UserModel from '../user/user.model';
+import toBoolean from '../../common/utils/toBoolean';
+import extractOrder from '../../common/utils/extract-order';
 
 @Injectable()
 export class CommentService {
@@ -58,18 +61,13 @@ export class CommentService {
   }
 
   async find(where: WhereOptions<CommentModel>, dto: CommentsQueryDto) {
-    const order: OrderItem[] | undefined = dto.orderBy
-      ? dto.orderDirection
-        ? [[dto.orderBy, dto.orderDirection]]
-        : [dto.orderBy]
-      : undefined;
-
     try {
       return await this.commentRepo.findAll({
         where,
         limit: dto.limit,
         offset: dto.offset,
-        order,
+        order: extractOrder(dto),
+        include: toBoolean(dto.eager) ? UserModel : undefined,
       });
     } catch (error) {
       throw new BadRequestException(error.message);

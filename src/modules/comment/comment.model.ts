@@ -16,6 +16,7 @@ import { CommentCreationT } from './types/comment-creation.type';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { Logger } from '@nestjs/common';
+import { InDecrementReturnType } from '../../common/types/indecrement.return.type';
 
 @Table({ tableName: 'comments' })
 export default class CommentModel extends Model<CommentModel, CommentCreationT> {
@@ -42,10 +43,10 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
   bookId: number;
 
   @BelongsTo(() => UserModel)
-  user: UserModel;
+  user: UserModel | undefined;
 
   @BelongsTo(() => BookModel)
-  book: BookModel;
+  book: BookModel | undefined;
 
   @ApiProperty()
   @Expose()
@@ -59,7 +60,10 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
 
   @AfterCreate
   static async afterCreateHook(comment: CommentModel) {
-    const [_, affected] = await BookModel.increment('commentsCount', { where: { id: comment.bookId }, by: 1 });
+    const [[_, affected]] = await BookModel.increment('commentsCount', {
+      where: { id: comment.bookId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<BookModel>;
     if (!affected)
       Logger.error('@AfterCreate failed', CommentModel.name);
     else
@@ -68,7 +72,10 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
 
   @AfterDestroy
   static async afterDestroyHook(comment: CommentModel) {
-    const [_, affected] = await BookModel.decrement('commentsCount', { where: { id: comment.bookId }, by: 1 });
+    const [[_, affected]] = await BookModel.decrement('commentsCount', {
+      where: { id: comment.bookId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<BookModel>;
     if (!affected)
       Logger.error('@AfterDestroy failed', CommentModel.name);
     else

@@ -28,6 +28,7 @@ import RolesGuard from '../role/guards/roles.guard';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import BookModel from './book.model';
 import GenreDto from '../genre/dtos/genre.dto';
+import BooksQueryDto from './dtos/books-query.dto';
 
 @ApiTags('book')
 @ApiBearerAuth()
@@ -56,7 +57,7 @@ export class BookController {
   @Public()
   @Get(':id')
   async getBook(@TokenPayload('id') userId: number | undefined,
-                @Param('bookId', ParseIntPipe) bookId: number) {
+                @Param('id', ParseIntPipe) bookId: number) {
     return this.bookService.getBook(bookId, userId);
   }
 
@@ -98,12 +99,28 @@ export class BookController {
     await this.bookService.addGenre(payload.id, bookId, dto.name, payload.admin);
   }
 
-  @ApiOperation({ summary: 'add genre (author, admin)' })
+  @ApiOperation({ summary: 'exclude genre (author, admin)' })
   @Roles(Role.Author, Role.Admin)
-  @Post(':id/genres')
+  @Delete(':id/genres')
   async excludeGenre(@TokenPayload() payload: TokenPayloadT,
                      @Param('id', ParseIntPipe) bookId: number,
                      @Query() dto: GenreDto) {
     await this.bookService.excludeGenre(payload.id, bookId, dto.name, payload.admin);
+  }
+
+  @ApiOperation({ summary: 'get books' })
+  @Public()
+  @Get('s/find')
+  async getBookReviews(@Query() dto: BooksQueryDto) {
+    return this.bookService.find({}, dto);
+  }
+
+  @ApiOperation({ summary: 'get user books' })
+  @Roles(Role.Author)
+  @Get('s/find/my')
+  async getReviews(@TokenPayload('id') authorId: number,
+                   @Query() dto: BooksQueryDto) {
+    console.log('s/find/my');
+    return this.bookService.find({ authorId }, dto);
   }
 }

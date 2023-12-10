@@ -1,8 +1,9 @@
-import { IsEnum, IsOptional, Min } from 'class-validator';
+import { IsBooleanString, IsIn, IsOptional, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { OrderBy } from '../order-by.enum';
-import { OrderDirection } from '../../../common/enums/order-direction.enum';
+import { OrderDirections } from '../../../common/constants/order-directions';
+
+const orderBy = ['rate', 'createdAt', 'updatedAt'];
 
 export default class ReviewsQueryDto {
   @ApiPropertyOptional()
@@ -11,19 +12,24 @@ export default class ReviewsQueryDto {
   @Min(1)
   limit?: number;
 
-  @ApiPropertyOptional({ enum: OrderBy })
+  @ApiPropertyOptional({ enum: orderBy })
   @IsOptional()
-  @IsEnum(OrderBy)
-  orderBy?: OrderBy;
+  @IsIn(orderBy)
+  orderBy?: string;
 
-  @ApiPropertyOptional({ enum: OrderDirection })
+  @ApiPropertyOptional({ enum: OrderDirections })
   @IsOptional()
-  @IsEnum(OrderDirection)
-  orderDirection?: OrderDirection;
+  @IsIn(OrderDirections)
+  orderDirection?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @Min(0)
   offset?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBooleanString()
+  eager?: string;
 }

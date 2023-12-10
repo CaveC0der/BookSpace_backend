@@ -33,8 +33,7 @@ export class AuthService {
   }
 
   async login(dto: LoginRequestDto) {
-    const user = (await this.userService.safeGetUserByEmail(dto.email,
-      [{ model: RoleModel }, { model: TokenModel }]))!;
+    const user = (await this.userService.safeGetUserByEmail(dto.email, [RoleModel, TokenModel]));
 
     if (!await bcryptjs.compare(dto.password, user.password))
       throw new BadRequestException('invalid password');
@@ -51,8 +50,7 @@ export class AuthService {
   }
 
   async refresh(id: number, token: string) {
-    const user = await this.userService.safeGetUserById(id,
-      [{ model: TokenModel }, { model: RoleModel }]);
+    const user = await this.userService.safeGetUserById(id, [TokenModel, RoleModel]);
 
     if (!user.token || user.token.value !== token)
       throw new UnauthorizedException();

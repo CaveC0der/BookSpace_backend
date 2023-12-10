@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectModel } from '@nestjs/sequelize';
 import UserModel from './user.model';
 import { UserCreationT } from './types/user-creation.type';
-import { IncludeOptions, ValidationError } from 'sequelize';
+import { Includeable, ValidationError } from 'sequelize';
 import RoleModel from '../role/role.model';
 import UserUpdateDto from './dtos/user-update.dto';
 import * as bcryptjs from 'bcryptjs';
@@ -27,7 +27,7 @@ export class UserService {
     }
   }
 
-  async safeGetUserById(id: number, include?: IncludeOptions[]) {
+  async safeGetUserById(id: number, include?: Includeable[]) {
     const user = await this.getUserById(id, include);
 
     if (!user)
@@ -38,7 +38,7 @@ export class UserService {
     return user;
   }
 
-  async safeGetUserByEmail(email: string, include?: IncludeOptions[]) {
+  async safeGetUserByEmail(email: string, include?: Includeable[]) {
     const user = await this.getUserByEmail(email, include);
 
     if (!user)
@@ -47,11 +47,11 @@ export class UserService {
     return user;
   }
 
-  async getUserById(id: number, include?: IncludeOptions[]) {
+  async getUserById(id: number, include?: Includeable[]) {
     return this.userRepo.findByPk(id, { include });
   }
 
-  async getUserByEmail(email: string, include?: IncludeOptions[]) {
+  async getUserByEmail(email: string, include?: Includeable[]) {
     return this.userRepo.findOne({ where: { email }, include });
   }
 
@@ -125,6 +125,6 @@ export class UserService {
     if (!user)
       throw new NotFoundException();
 
-    // todo - exclude role
+    await user.$remove('roles', name);
   }
 }

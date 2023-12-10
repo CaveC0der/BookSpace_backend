@@ -1,11 +1,14 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import ReviewModel from './review.model';
-import { OrderItem, ValidationError } from 'sequelize';
+import { ValidationError } from 'sequelize';
 import { ReviewCreationT } from './types/review-creation.type';
 import { ReviewUpdateT } from './types/review-update.type';
 import ReviewsQueryDto from './dtos/reviews-query.dto';
 import { WhereOptions } from 'sequelize/types/model';
+import UserModel from '../user/user.model';
+import toBoolean from '../../common/utils/toBoolean';
+import extractOrder from '../../common/utils/extract-order';
 
 @Injectable()
 export class ReviewService {
@@ -53,18 +56,13 @@ export class ReviewService {
   }
 
   async find(where: WhereOptions<ReviewModel>, dto: ReviewsQueryDto) {
-    const order: OrderItem[] | undefined = dto.orderBy
-      ? dto.orderDirection
-        ? [[dto.orderBy, dto.orderDirection]]
-        : [dto.orderBy]
-      : undefined;
-
     try {
       return await this.reviewRepo.findAll({
         where,
         limit: dto.limit,
         offset: dto.offset,
-        order,
+        order: extractOrder(dto),
+        include: toBoolean(dto.eager) ? UserModel : undefined,
       });
     } catch (error) {
       throw new BadRequestException(error.message);

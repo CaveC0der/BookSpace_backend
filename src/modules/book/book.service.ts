@@ -8,12 +8,17 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './book.model';
 import { BookCreationT } from './types/book-creation.type';
-import { ValidationError } from 'sequelize';
+import { col, fn, Op, OrderItem, ValidationError } from 'sequelize';
 import { FileService } from '../file/file.service';
 import GenreModel from '../genre/genre.model';
 import { GenreService } from '../genre/genre.service';
 import { ViewModel } from './view.model';
 import BookUpdateDto from './dtos/book-update.dto';
+import { WhereOptions } from 'sequelize/types/model';
+import extractOrder from '../../common/utils/extract-order';
+import BooksQueryDto from './dtos/books-query.dto';
+import toBoolean from '../../common/utils/toBoolean';
+import UserModel from '../user/user.model';
 
 @Injectable()
 export class BookService {
@@ -37,12 +42,12 @@ export class BookService {
   async getBook(bookId: number, userId?: number) {
     if (userId) {
       try {
-        const [view, created] = await this.viewRepo.findOrCreate({
-          where: { userId, bookId },
-          defaults: { userId, bookId },
-        });
-        if (!created)
-          await view.update({ updatedAt: new Date() });
+        const view = await this.viewRepo.findOne({ where: { userId, bookId } });
+        if (view) {
+          view.changed('updatedAt', true);
+          await view.save();
+        } else
+          await this.viewRepo.create({ userId, bookId });
       } catch (error) {
         if (error instanceof ValidationError)
           error = error.errors.map(err => err.message);
@@ -50,17 +55,14 @@ export class BookService {
       }
     }
 
-    const book = await this.bookRepo.findByPk(bookId);
-
+    const book = await this.bookRepo.findByPk(bookId, { include: [UserModel, GenreModel] });
     if (!book)
       throw new NotFoundException();
-
     return book;
   }
 
   async updateBook(userId: number, bookId: number, dto: BookUpdateDto, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-
     if (!book)
       throw new NotFoundException();
 
@@ -78,7 +80,6 @@ export class BookService {
 
   async setBookCover(userId: number, bookId: number, file: Express.Multer.File) {
     const book = await this.bookRepo.findByPk(bookId);
-
     if (!book)
       throw new NotFoundException();
 
@@ -99,7 +100,6 @@ export class BookService {
 
   async deleteCover(userId: number, bookId: number, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-
     if (!book)
       throw new NotFoundException();
 
@@ -120,7 +120,6 @@ export class BookService {
 
   async addGenre(userId: number, bookId: number, name: string, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId, { include: GenreModel });
-
     if (!book)
       throw new NotFoundException();
 
@@ -134,7 +133,6 @@ export class BookService {
 
   async excludeGenre(userId: number, bookId: number, name: string, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId, { include: GenreModel });
-
     if (!book)
       throw new NotFoundException();
 
@@ -143,6 +141,34 @@ export class BookService {
 
     const genre = await this.genreService.getGenre(name);
 
-    // todo - exclude genre
+    await book.$remove('genres', genre);
+  }
+
+  async find(where: WhereOptions<BookModel>, dto: BooksQueryDto) {
+    where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query ?? '' }, ...where };
+
+    let order: OrderItem[] | undefined;
+    if (dto.orderBy === 'popularity')
+      order = [[
+        fn('related_popularity',
+          col('BookModel.viewsCount'),
+          col('BookModel.reviewsCount'),
+          col('BookModel.commentsCount')),
+        dto.orderDirection ?? 'ASC',
+      ]];
+    else
+      order = extractOrder(dto);
+
+    try {
+      return await this.bookRepo.findAll({
+        where,
+        limit: dto.limit,
+        offset: dto.offset,
+        order,
+        include: toBoolean(dto.eager) ? [UserModel, GenreModel] : GenreModel,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

@@ -27,7 +27,7 @@ export class RoleService {
   }
 
   async updateRole(name: string, description: string) {
-    const updated = await this.roleRepo.update({ description }, { where: { name } });
+    const updated = await this.roleRepo.update({ description }, { where: { name }});
     Logger.log(`roles updated: ${updated}`, RoleService.name);
     if (!updated) {
       Logger.error(`updateRole(${name}) failed`, RoleService.name);

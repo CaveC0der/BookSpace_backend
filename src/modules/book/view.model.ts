@@ -3,14 +3,15 @@ import UserModel from '../user/user.model';
 import { AfterCreate, BelongsTo, Column, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import BookModel from './book.model';
 import { Logger } from '@nestjs/common';
+import { InDecrementReturnType } from '../../common/types/indecrement.return.type';
 
-export type TViewCreation = {
-  userId?: number
+export type ViewCreationT = {
+  userId: number
   bookId: number
 }
 
 @Table({ tableName: 'views', createdAt: false })
-export class ViewModel extends Model<ViewModel, TViewCreation> {
+export class ViewModel extends Model<ViewModel, ViewCreationT> {
   @ForeignKey(() => UserModel)
   @Column({ type: DataTypes.INTEGER, primaryKey: true })
   userId: number;
@@ -30,8 +31,14 @@ export class ViewModel extends Model<ViewModel, TViewCreation> {
 
   @AfterCreate
   static async afterCreateHook(view: ViewModel) {
-    const [_u, usersAffected] = await UserModel.increment('viewsCount', { where: { id: view.userId }, by: 1 });
-    const [_b, booksAffected] = await BookModel.increment('viewsCount', { where: { id: view.bookId }, by: 1 });
+    const [[_u, usersAffected]] = await UserModel.increment('viewsCount', {
+      where: { id: view.userId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<UserModel>;
+    const [[_b, booksAffected]] = await BookModel.increment('viewsCount', {
+      where: { id: view.bookId },
+      by: 1,
+    }) as unknown as InDecrementReturnType<BookModel>;
     if (!usersAffected || !booksAffected)
       Logger.error('@AfterCreate failed', ViewModel.name);
     else

@@ -74,7 +74,7 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
   reviewsCount: number;
 
   @HasOne(() => TokenModel)
-  token: TokenModel | null;
+  token: TokenModel | undefined;
 
   @ApiProperty()
   @Expose()
