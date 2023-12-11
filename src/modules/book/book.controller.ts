@@ -111,16 +111,15 @@ export class BookController {
   @ApiOperation({ summary: 'get books' })
   @Public()
   @Get('s/find')
-  async getBookReviews(@Query() dto: BooksQueryDto) {
+  async getBooks(@Query() dto: BooksQueryDto) {
     return this.bookService.find({}, dto);
   }
 
-  @ApiOperation({ summary: 'get user books' })
+  @ApiOperation({ summary: 'get authored books' })
   @Roles(Role.Author)
   @Get('s/find/my')
-  async getReviews(@TokenPayload('id') authorId: number,
-                   @Query() dto: BooksQueryDto) {
-    console.log('s/find/my');
+  async getAuthoredBooks(@TokenPayload('id') authorId: number,
+                         @Query() dto: BooksQueryDto) {
     return this.bookService.find({ authorId }, dto);
   }
 }

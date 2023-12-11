@@ -1,6 +1,6 @@
 import { IsBooleanString, IsIn, IsOptional, Length, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { OrderDirections } from '../../../common/constants/order-directions';
 import { Op } from 'sequelize';
 
@@ -17,6 +17,12 @@ export default class BooksQueryDto {
   @ApiPropertyOptional({ enum: modes })
   @IsOptional()
   mode?: keyof typeof Op;
+
+  @ApiPropertyOptional({ example: ['Fantasy'] })
+  @IsOptional()
+  @Transform(({ value }) => typeof value === 'string' ? [value] : value)
+  @Length(1, 48, { each: true })
+  genres?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()

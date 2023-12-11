@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './book.model';
 import { BookCreationT } from './types/book-creation.type';
-import { col, fn, Op, OrderItem, ValidationError } from 'sequelize';
+import { col, fn, literal, Op, OrderItem, ValidationError } from 'sequelize';
 import { FileService } from '../file/file.service';
 import GenreModel from '../genre/genre.model';
 import { GenreService } from '../genre/genre.service';
@@ -17,8 +17,9 @@ import BookUpdateDto from './dtos/book-update.dto';
 import { WhereOptions } from 'sequelize/types/model';
 import extractOrder from '../../common/utils/extract-order';
 import BooksQueryDto from './dtos/books-query.dto';
-import toBoolean from '../../common/utils/toBoolean';
 import UserModel from '../user/user.model';
+import { BookGenreModel } from '../genre/book-genre.model';
+import toBoolean from '../../common/utils/toBoolean';
 
 @Injectable()
 export class BookService {
@@ -26,6 +27,8 @@ export class BookService {
               private bookRepo: typeof BookModel,
               @InjectModel(ViewModel)
               private viewRepo: typeof ViewModel,
+              @InjectModel(BookGenreModel)
+              private bookGenreRepo: typeof BookGenreModel,
               private fileService: FileService,
               private genreService: GenreService) {}
 
@@ -145,7 +148,20 @@ export class BookService {
   }
 
   async find(where: WhereOptions<BookModel>, dto: BooksQueryDto) {
-    where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query ?? '' }, ...where };
+    if (dto.query)
+      where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query, ...where } };
+
+    if (dto.genres)
+      where = {
+        id: {
+          [Op.in]: (await this.bookGenreRepo.findAll({
+            attributes: ['bookId'],
+            where: { genre: { [Op.in]: dto.genres } },
+            group: ['bookId'],
+            having: literal(`COUNT(genre) = ${dto.genres.length}`),
+          })).map(bg => bg.bookId),
+        }, ...where,
+      };
 
     let order: OrderItem[] | undefined;
     if (dto.orderBy === 'popularity')
