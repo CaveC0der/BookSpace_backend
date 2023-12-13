@@ -8,6 +8,7 @@ import {
   ParseEnumPipe,
   Post,
   Put,
+  Query,
   SerializeOptions,
   UseGuards,
   UseInterceptors,
@@ -20,9 +21,10 @@ import AuthGuard from '../auth/guards/auth.guard';
 import RolesGuard from './guards/roles.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import RoleModel from './role.model';
-import GenreModel from '../genre/genre.model';
 import { Public } from '../auth/decorators/public.decorator';
 import RoleUpdateDto from './dtos/role-update.dto';
+import UserModel from '../user/user.model';
+import UsersQueryDto from '../user/dtos/users-query.dto';
 
 @ApiTags('role')
 @ApiBearerAuth()
@@ -41,38 +43,47 @@ export class RoleController {
   @ApiResponse({ type: RoleModel })
   @Roles(Role.Admin)
   @Post()
-  async createRole(@Body() dto: RoleCreationDto) {
-    return this.roleService.createRole(dto);
+  async create(@Body() dto: RoleCreationDto) {
+    return this.roleService.create(dto);
   }
 
   @ApiOperation({ summary: 'get role' })
   @ApiResponse({ type: RoleModel })
   @Roles(Role.Reader)
   @Get(':id')
-  async getRole(@Param('id', new ParseEnumPipe(Role)) name: Role) {
-    return this.roleService.getRole(name);
+  async get(@Param('id', new ParseEnumPipe(Role)) name: Role) {
+    return this.roleService.get(name);
   }
 
   @ApiOperation({ summary: 'update role (admin)' })
   @Roles(Role.Admin)
   @Put(':id')
-  async updateRole(@Param('id') name: string,
-                   @Body() dto: RoleUpdateDto) {
-    await this.roleService.updateRole(name, dto.description);
+  async update(@Param('id', new ParseEnumPipe(Role)) name: Role,
+               @Body() dto: RoleUpdateDto) {
+    await this.roleService.update(name, dto.description);
   }
 
   @ApiOperation({ summary: 'delete role (admin)' })
   @Roles(Role.Admin)
   @Delete(':id')
-  async deleteRole(@Param('id') name: string) {
-    await this.roleService.deleteRole(name);
+  async delete(@Param('id', new ParseEnumPipe(Role)) name: Role) {
+    await this.roleService.delete(name);
   }
 
-  @ApiOperation({ summary: 'list roles' })
-  @ApiResponse({ type: [GenreModel] })
+  @ApiOperation({ summary: 'list roles (public)' })
+  @ApiResponse({ type: [RoleModel] })
   @Public()
   @Get('list')
-  async listRoles() {
-    return this.roleService.getAllRoles();
+  async list() {
+    return this.roleService.getAll();
+  }
+
+  @ApiOperation({ summary: 'get role users' })
+  @ApiResponse({ type: [UserModel] })
+  @Roles(Role.Reader)
+  @Get(':id/users')
+  async findRoleUsers(@Param('id', new ParseEnumPipe(Role)) name: Role,
+                      @Query() dto: UsersQueryDto) {
+    return this.roleService.getRoleUsers(name, dto);
   }
 }

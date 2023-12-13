@@ -44,38 +44,39 @@ export class ReviewController {
   @ApiResponse({ type: ReviewModel })
   @Roles(Role.Reader)
   @Post()
-  async createReview(@TokenPayload('id') id: number,
-                     @Body() dto: ReviewCreationDto) {
-    return this.reviewService.createReview(id, dto);
+  async create(@TokenPayload('id') id: number,
+               @Body() dto: ReviewCreationDto) {
+    return this.reviewService.create(id, dto);
   }
 
   @ApiOperation({ summary: 'get review' })
   @ApiResponse({ type: ReviewModel })
   @Roles(Role.Reader)
   @Get(':bookId')
-  async getReview(@TokenPayload('id') id: number,
-                  @Param('bookId', ParseIntPipe) bookId: number) {
-    return this.reviewService.getReview(id, bookId);
+  async get(@TokenPayload('id') id: number,
+            @Param('bookId', ParseIntPipe) bookId: number) {
+    return this.reviewService.get(id, bookId);
   }
 
   @ApiOperation({ summary: 'update review' })
   @Roles(Role.Reader)
   @Put(':bookId')
-  async updateReview(@TokenPayload('id') id: number,
-                     @Body() dto: ReviewUpdateDto) {
-    await this.reviewService.updateReview(id, dto);
+  async update(@TokenPayload('id') id: number,
+               @Body() dto: ReviewUpdateDto) {
+    await this.reviewService.update(id, dto);
   }
 
   @ApiOperation({ summary: 'delete review (user, admin)' })
   @Roles(Role.Reader, Role.Admin)
   @Delete(':userId-:bookId')
-  async deleteReview(@TokenPayload() payload: TokenPayloadT,
-                     @Param('userId', ParseIntPipe) userId: number,
-                     @Param('bookId', ParseIntPipe) bookId: number) {
-    await this.reviewService.deleteReview(payload.id, userId, bookId, payload.admin);
+  async delete(@TokenPayload() payload: TokenPayloadT,
+               @Param('userId', ParseIntPipe) userId: number,
+               @Param('bookId', ParseIntPipe) bookId: number) {
+    await this.reviewService.delete(payload.id, userId, bookId, payload.admin);
   }
 
   @ApiOperation({ summary: 'get user reviews' })
+  @ApiResponse({ type: [ReviewModel] })
   @Roles(Role.Reader)
   @Get('s/my')
   async getReviews(@TokenPayload('id') userId: number,
@@ -83,7 +84,8 @@ export class ReviewController {
     return this.reviewService.find({ userId }, dto);
   }
 
-  @ApiOperation({ summary: 'get book reviews' })
+  @ApiOperation({ summary: 'get book reviews (public)' })
+  @ApiResponse({ type: [ReviewModel] })
   @Public()
   @Get('s/:bookId')
   async getBookReviews(@Param('bookId', ParseIntPipe) bookId: number,

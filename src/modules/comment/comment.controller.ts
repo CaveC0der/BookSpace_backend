@@ -44,37 +44,38 @@ export class CommentController {
   @ApiResponse({ type: CommentModel })
   @Roles(Role.Reader)
   @Post()
-  async createComment(@TokenPayload('id') id: number,
-                      @Body() dto: CommentCreationDto) {
-    return this.commentService.createComment(id, dto);
+  async create(@TokenPayload('id') id: number,
+               @Body() dto: CommentCreationDto) {
+    return this.commentService.create(id, dto);
   }
 
   @ApiOperation({ summary: 'get comment' })
   @ApiResponse({ type: CommentModel })
   @Roles(Role.Reader)
   @Get(':id')
-  async getComment(@Param('id', ParseIntPipe) id: number) {
-    return this.commentService.getComment(id);
+  async get(@Param('id', ParseIntPipe) id: number) {
+    return this.commentService.get(id);
   }
 
   @ApiOperation({ summary: 'update comment' })
   @Roles(Role.Reader)
   @Put(':id')
-  async updateComment(@TokenPayload('id') userId: number,
-                      @Param('id', ParseIntPipe) commentId: number,
-                      @Body() dto: CommentUpdateDto) {
-    await this.commentService.updateComment(userId, commentId, dto.text);
+  async update(@TokenPayload('id') userId: number,
+               @Param('id', ParseIntPipe) commentId: number,
+               @Body() dto: CommentUpdateDto) {
+    await this.commentService.update(userId, commentId, dto.text);
   }
 
   @ApiOperation({ summary: 'delete comment (user, admin)' })
   @Roles(Role.Reader, Role.Admin)
   @Delete(':id')
-  async deleteComment(@TokenPayload() payload: TokenPayloadT,
-                      @Param('id', ParseIntPipe) commentId: number) {
-    await this.commentService.deleteComment(payload.id, commentId, payload.admin);
+  async delete(@TokenPayload() payload: TokenPayloadT,
+               @Param('id', ParseIntPipe) commentId: number) {
+    await this.commentService.delete(payload.id, commentId, payload.admin);
   }
 
-  @ApiOperation({ summary: 'get book comments' })
+  @ApiOperation({ summary: 'get book comments (public)' })
+  @ApiResponse({ type: [CommentModel] })
   @Public()
   @Get('s/:bookId')
   async getBookComments(@Param('bookId', ParseIntPipe) bookId: number,

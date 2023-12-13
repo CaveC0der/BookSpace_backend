@@ -1,25 +1,19 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './book.model';
 import { BookCreationT } from './types/book-creation.type';
-import { col, fn, literal, Op, OrderItem, ValidationError } from 'sequelize';
+import { literal, Op, ValidationError } from 'sequelize';
 import { FileService } from '../file/file.service';
 import GenreModel from '../genre/genre.model';
 import { GenreService } from '../genre/genre.service';
 import { ViewModel } from './view.model';
 import BookUpdateDto from './dtos/book-update.dto';
 import { WhereOptions } from 'sequelize/types/model';
-import extractOrder from '../../common/utils/extract-order';
-import BooksQueryDto from './dtos/books-query.dto';
+import { extractBooksOrder } from '../../common/utils/extract-order';
 import UserModel from '../user/user.model';
 import { BookGenreModel } from '../genre/book-genre.model';
 import toBoolean from '../../common/utils/toBoolean';
+import FindBooksQueryDto from './dtos/find-books-query.dto';
 
 @Injectable()
 export class BookService {
@@ -32,7 +26,7 @@ export class BookService {
               private fileService: FileService,
               private genreService: GenreService) {}
 
-  async createBook(authorId: number, dto: BookCreationT) {
+  async create(authorId: number, dto: BookCreationT) {
     try {
       return await this.bookRepo.create({ ...dto, authorId });
     } catch (error) {
@@ -42,7 +36,7 @@ export class BookService {
     }
   }
 
-  async getBook(bookId: number, userId?: number) {
+  async get(bookId: number, userId?: number) {
     if (userId) {
       try {
         const view = await this.viewRepo.findOne({ where: { userId, bookId } });
@@ -64,13 +58,13 @@ export class BookService {
     return book;
   }
 
-  async updateBook(userId: number, bookId: number, dto: BookUpdateDto, force?: boolean) {
+  async update(userId: number, bookId: number, dto: BookUpdateDto, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
     if (!book)
       throw new NotFoundException();
 
     if (book.authorId !== userId && !force)
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
 
     try {
       await book.update(dto);
@@ -81,13 +75,35 @@ export class BookService {
     }
   }
 
-  async setBookCover(userId: number, bookId: number, file: Express.Multer.File) {
+  async delete(userId: number, bookId: number, hard?: boolean, force?: boolean) {
+    const book = await this.bookRepo.findByPk(bookId);
+    if (!book)
+      throw new NotFoundException();
+
+    if (book.authorId !== userId && !force)
+      throw new ForbiddenException();
+
+    await book.destroy({ force: hard });
+  }
+
+  async restore(userId: number, bookId: number, force?: boolean) {
+    const book = await this.bookRepo.findByPk(bookId, { paranoid: false });
+    if (!book)
+      throw new NotFoundException();
+
+    if (book.authorId !== userId && !force)
+      throw new ForbiddenException();
+
+    await book.restore();
+  }
+
+  async setCover(userId: number, bookId: number, file: Express.Multer.File) {
     const book = await this.bookRepo.findByPk(bookId);
     if (!book)
       throw new NotFoundException();
 
     if (book.authorId !== userId)
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
 
     if (book.cover)
       await this.fileService.delete(book.cover);
@@ -129,9 +145,7 @@ export class BookService {
     if (userId !== book.authorId && !force)
       throw new ForbiddenException();
 
-    const genre = await this.genreService.getGenre(name);
-
-    await book.$add('genres', genre);
+    await book.$add('genres', await this.genreService.get(name));
   }
 
   async excludeGenre(userId: number, bookId: number, name: string, force?: boolean) {
@@ -142,12 +156,10 @@ export class BookService {
     if (userId !== book.authorId && !force)
       throw new ForbiddenException();
 
-    const genre = await this.genreService.getGenre(name);
-
-    await book.$remove('genres', genre);
+    await book.$remove('genres', await this.genreService.get(name));
   }
 
-  async find(where: WhereOptions<BookModel>, dto: BooksQueryDto) {
+  async find(where: WhereOptions<BookModel>, dto: FindBooksQueryDto) {
     if (dto.query)
       where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query, ...where } };
 
@@ -163,24 +175,12 @@ export class BookService {
         }, ...where,
       };
 
-    let order: OrderItem[] | undefined;
-    if (dto.orderBy === 'popularity')
-      order = [[
-        fn('related_popularity',
-          col('BookModel.viewsCount'),
-          col('BookModel.reviewsCount'),
-          col('BookModel.commentsCount')),
-        dto.orderDirection ?? 'ASC',
-      ]];
-    else
-      order = extractOrder(dto);
-
     try {
       return await this.bookRepo.findAll({
         where,
         limit: dto.limit,
         offset: dto.offset,
-        order,
+        order: extractBooksOrder(dto),
         include: toBoolean(dto.eager) ? [UserModel, GenreModel] : GenreModel,
       });
     } catch (error) {

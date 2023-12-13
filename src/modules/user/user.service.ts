@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import UserModel from './user.model';
 import { UserCreationT } from './types/user-creation.type';
@@ -17,7 +17,7 @@ export class UserService {
               private config: ConfigService,
               private fileService: FileService) {}
 
-  async createUser(dto: UserCreationT) {
+  async create(dto: UserCreationT) {
     try {
       return await this.userRepo.create(dto);
     } catch (error) {
@@ -27,38 +27,32 @@ export class UserService {
     }
   }
 
-  async safeGetUserById(id: number, include?: Includeable[]) {
-    const user = await this.getUserById(id, include);
-
+  async safeGetById(id: number, include?: Includeable[]) {
+    const user = await this.getById(id, include);
     if (!user)
       throw new NotFoundException();
-
-    console.log(user.roles);
-
     return user;
   }
 
-  async safeGetUserByEmail(email: string, include?: Includeable[]) {
-    const user = await this.getUserByEmail(email, include);
-
+  async safeGetByEmail(email: string, include?: Includeable[]) {
+    const user = await this.getByEmail(email, include);
     if (!user)
       throw new NotFoundException();
-
     return user;
   }
 
-  async getUserById(id: number, include?: Includeable[]) {
+  async getById(id: number, include?: Includeable[]) {
     return this.userRepo.findByPk(id, { include });
   }
 
-  async getUserByEmail(email: string, include?: Includeable[]) {
+  async getByEmail(email: string, include?: Includeable[]) {
     return this.userRepo.findOne({ where: { email }, include });
   }
 
-  async updateUser(id: number, dto: UserUpdateDto) {
+  async update(id: number, dto: UserUpdateDto) {
     dto.password &&= await bcryptjs.hash(dto.password, this.config.HASH_PASSWORD_SALT);
-    const user = await this.userRepo.findByPk(id);
 
+    const user = await this.userRepo.findByPk(id);
     if (!user)
       throw new NotFoundException();
 
@@ -71,9 +65,27 @@ export class UserService {
     }
   }
 
+  async delete(id: number, hard?: boolean) {
+    const destroyed = await this.userRepo.destroy({ where: { id }, force: hard });
+    Logger.log(`users destroyed: ${destroyed}`, UserService.name);
+    if (!destroyed) {
+      Logger.error(`delete(${id}) failed`, UserService.name);
+      throw new NotFoundException();
+    }
+  }
+
+  async restore(id: number) {
+    try {
+      await this.userRepo.restore({ where: { id } });
+    } catch (error) {
+      if (error instanceof ValidationError)
+        error = error.errors.map(err => err.message);
+      throw new BadRequestException(error);
+    }
+  }
+
   async setAvatar(id: number, file: Express.Multer.File) {
     const user = await this.userRepo.findByPk(id);
-
     if (!user)
       throw new NotFoundException();
 
@@ -89,14 +101,10 @@ export class UserService {
     }
   }
 
-  async deleteAvatar(issuerId: number, userId: number, force?: boolean) {
-    const user = await this.userRepo.findByPk(userId);
-
+  async deleteAvatar(id: number) {
+    const user = await this.userRepo.findByPk(id);
     if (!user)
       throw new NotFoundException();
-
-    if (issuerId !== user.id && !force)
-      throw new ForbiddenException();
 
     if (user.avatar)
       await this.fileService.delete(user.avatar);
@@ -112,7 +120,6 @@ export class UserService {
 
   async addRole(id: number, name: Role) {
     const user = await this.userRepo.findByPk(id, { include: RoleModel });
-
     if (!user)
       throw new NotFoundException();
 
@@ -121,7 +128,6 @@ export class UserService {
 
   async excludeRole(id: number, name: Role) {
     const user = await this.userRepo.findByPk(id, { include: RoleModel });
-
     if (!user)
       throw new NotFoundException();
 

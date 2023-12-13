@@ -1,35 +1,12 @@
-import { IsBooleanString, IsIn, IsOptional, Min } from 'class-validator';
+import { IsIn } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { OrderDirections } from '../../../common/constants/order-directions';
+import QueryDto from '../../../common/classes/query.dto';
+import CommentModel from '../comment.model';
 
-const orderBy = ['createdAt', 'updatedAt'];
+const orderBy: (keyof CommentModel)[] = ['createdAt', 'updatedAt'];
 
-export default class CommentsQueryDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @Min(1)
-  limit?: number;
-
+export default class CommentsQueryDto extends QueryDto {
   @ApiPropertyOptional({ enum: orderBy })
-  @IsOptional()
   @IsIn(orderBy)
   orderBy?: string;
-
-  @ApiPropertyOptional({ enum: OrderDirections })
-  @IsOptional()
-  @IsIn(OrderDirections)
-  orderDirection?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @Min(0)
-  offset?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBooleanString()
-  eager?: string;
 }

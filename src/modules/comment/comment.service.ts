@@ -13,7 +13,7 @@ import extractOrder from '../../common/utils/extract-order';
 export class CommentService {
   constructor(@InjectModel(CommentModel) private commentRepo: typeof CommentModel) {}
 
-  async createComment(userId: number, dto: CommentCreationT) {
+  async create(userId: number, dto: CommentCreationT) {
     try {
       return await this.commentRepo.create({ ...dto, userId });
     } catch (error) {
@@ -23,14 +23,14 @@ export class CommentService {
     }
   }
 
-  async getComment(id: number) {
+  async get(id: number) {
     const comment = await this.commentRepo.findByPk(id);
     if (!comment)
       throw new NotFoundException();
     return comment;
   }
 
-  async updateComment(userId: number, commentId: number, text: string) {
+  async update(userId: number, commentId: number, text: string) {
     const comment = await this.commentRepo.findByPk(commentId);
 
     if (!comment)
@@ -48,9 +48,8 @@ export class CommentService {
     }
   }
 
-  async deleteComment(userId: number, commentId: number, force?: boolean) {
+  async delete(userId: number, commentId: number, force?: boolean) {
     const comment = await this.commentRepo.findByPk(commentId);
-
     if (!comment)
       throw new NotFoundException();
 

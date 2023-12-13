@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Delete,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -24,6 +25,10 @@ import AuthGuard from '../auth/guards/auth.guard';
 import RolesGuard from '../role/guards/roles.guard';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import RoleDto from '../role/dtos/role.dto';
+import { Public } from '../auth/decorators/public.decorator';
+import UserModel from './user.model';
+import DeleteDto from '../../common/classes/delete.dto';
+import toBoolean from '../../common/utils/toBoolean';
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -38,12 +43,42 @@ import RoleDto from '../role/dtos/role.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @ApiOperation({ summary: 'get user (public)' })
+  @ApiResponse({ type: UserModel })
+  @Public()
+  @Get(':id')
+  async get(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.safeGetById(id);
+  }
+
   @ApiOperation({ summary: 'update user' })
   @Roles(Role.Reader)
   @Put()
-  async updateUser(@TokenPayload('id') id: number,
-                   @Body() dto: UserUpdateDto) {
-    await this.userService.updateUser(id, dto);
+  async update(@TokenPayload('id') id: number,
+               @Body() dto: UserUpdateDto) {
+    await this.userService.update(id, dto);
+  }
+
+  @ApiOperation({ summary: 'delete user' })
+  @Roles(Role.Reader)
+  @Delete()
+  async delete(@TokenPayload('id') id: number) {
+    await this.userService.delete(id);
+  }
+
+  @ApiOperation({ summary: 'delete user (admin)' })
+  @Roles(Role.Admin)
+  @Delete(':id')
+  async deleteUser(@Param('id', ParseIntPipe) id: number,
+                   @Query() dto: DeleteDto) {
+    await this.userService.delete(id, toBoolean(dto.hard));
+  }
+
+  @ApiOperation({ summary: 'restore user (admin)' })
+  @Roles(Role.Admin)
+  @Post(':id')
+  async restore(@Param('id', ParseIntPipe) id: number) {
+    await this.userService.restore(id);
   }
 
   @ApiOperation({ summary: 'set avatar' })
@@ -61,7 +96,7 @@ export class UserController {
   @Roles(Role.Reader)
   @Delete('avatar')
   async deleteAvatar(@TokenPayload('id') id: number) {
-    await this.userService.deleteAvatar(id, id);
+    await this.userService.deleteAvatar(id);
   }
 
   @ApiOperation({ summary: 'delete avatar (admin)' })
@@ -69,7 +104,7 @@ export class UserController {
   @Delete(':id/avatar')
   async deleteUserAvatar(@TokenPayload() payload: TokenPayloadT,
                          @Param('id', ParseIntPipe) id: number) {
-    await this.userService.deleteAvatar(payload.id, id, payload.admin);
+    await this.userService.deleteAvatar(id);
   }
 
   @ApiOperation({ summary: 'add role (admin)' })
@@ -77,7 +112,6 @@ export class UserController {
   @Post(':id/roles')
   async addRole(@Param('id', ParseIntPipe) id: number,
                 @Query() dto: RoleDto) {
-    console.log(dto);
     await this.userService.addRole(id, dto.name);
   }
 

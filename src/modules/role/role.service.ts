@@ -4,12 +4,15 @@ import RoleModel from './role.model';
 import { RoleCreationT } from './types/role-creation.type';
 import { ValidationError } from 'sequelize';
 import { Role } from './role.enum';
+import extractOrder from '../../common/utils/extract-order';
+import toBoolean from '../../common/utils/toBoolean';
+import UsersQueryDto from '../user/dtos/users-query.dto';
 
 @Injectable()
 export class RoleService {
   constructor(@InjectModel(RoleModel) private roleRepo: typeof RoleModel) {}
 
-  async createRole(dto: RoleCreationT) {
+  async create(dto: RoleCreationT) {
     try {
       return await this.roleRepo.create(dto);
     } catch (error) {
@@ -19,15 +22,15 @@ export class RoleService {
     }
   }
 
-  async getRole(name: Role) {
+  async get(name: Role) {
     const role = await this.roleRepo.findByPk(name);
     if (!role)
       throw new NotFoundException();
     return role;
   }
 
-  async updateRole(name: string, description: string) {
-    const updated = await this.roleRepo.update({ description }, { where: { name }});
+  async update(name: Role, description: string) {
+    const updated = await this.roleRepo.update({ description }, { where: { name } });
     Logger.log(`roles updated: ${updated}`, RoleService.name);
     if (!updated) {
       Logger.error(`updateRole(${name}) failed`, RoleService.name);
@@ -35,7 +38,7 @@ export class RoleService {
     }
   }
 
-  async deleteRole(name: string) {
+  async delete(name: Role) {
     const destroyed = await this.roleRepo.destroy({ where: { name } });
     Logger.log(`roles destroyed: ${destroyed}`, RoleService.name);
     if (!destroyed) {
@@ -44,7 +47,24 @@ export class RoleService {
     }
   }
 
-  async getAllRoles() {
+  async getAll() {
     return this.roleRepo.findAll();
+  }
+
+  async getRoleUsers(name: Role, dto: UsersQueryDto) {
+    const role = await this.roleRepo.findByPk(name);
+    if (!role)
+      throw new NotFoundException();
+
+    try {
+      return await role.$get('users', {
+        limit: dto.limit,
+        offset: dto.offset,
+        order: extractOrder(dto),
+        include: toBoolean(dto.eager) ? [RoleModel] : undefined,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

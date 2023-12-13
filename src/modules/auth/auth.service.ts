@@ -18,11 +18,11 @@ export class AuthService {
               private tokenService: TokenService) {}
 
   async signup(dto: UserCreationT) {
-    if (await this.userService.getUserByEmail(dto.email))
+    if (await this.userService.getByEmail(dto.email))
       throw new BadRequestException('user already exists');
 
     dto.password = await bcryptjs.hash(dto.password, this.config.HASH_PASSWORD_SALT);
-    const user = await this.userService.createUser(dto);
+    const user = await this.userService.create(dto);
     const roles = await user.$get('roles');
     const payload: TokenPayloadT = { id: user.id, roles: roles.map(role => role.name) };
     const accessToken = await this.tokenService.genAccessToken(payload);
@@ -33,7 +33,7 @@ export class AuthService {
   }
 
   async login(dto: LoginRequestDto) {
-    const user = (await this.userService.safeGetUserByEmail(dto.email, [RoleModel, TokenModel]));
+    const user = (await this.userService.safeGetByEmail(dto.email, [RoleModel, TokenModel]));
 
     if (!await bcryptjs.compare(dto.password, user.password))
       throw new BadRequestException('invalid password');
@@ -50,7 +50,7 @@ export class AuthService {
   }
 
   async refresh(id: number, token: string) {
-    const user = await this.userService.safeGetUserById(id, [TokenModel, RoleModel]);
+    const user = await this.userService.safeGetById(id, [TokenModel, RoleModel]);
 
     if (!user.token || user.token.value !== token)
       throw new UnauthorizedException();

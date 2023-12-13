@@ -14,7 +14,7 @@ import extractOrder from '../../common/utils/extract-order';
 export class ReviewService {
   constructor(@InjectModel(ReviewModel) private reviewRepo: typeof ReviewModel) {}
 
-  async createReview(userId: number, dto: ReviewCreationT) {
+  async create(userId: number, dto: ReviewCreationT) {
     try {
       return await this.reviewRepo.create({ ...dto, userId });
     } catch (error) {
@@ -24,14 +24,14 @@ export class ReviewService {
     }
   }
 
-  async getReview(userId: number, bookId: number) {
+  async get(userId: number, bookId: number) {
     const review = await this.reviewRepo.findOne({ where: { userId, bookId } });
     if (!review)
       throw new NotFoundException();
     return review;
   }
 
-  async updateReview(userId: number, dto: ReviewUpdateT) {
+  async update(userId: number, dto: ReviewUpdateT) {
     const updated = await this.reviewRepo.update(
       { rate: dto.rate, text: dto.text },
       { where: { userId, bookId: dto.bookId } },
@@ -43,7 +43,7 @@ export class ReviewService {
     }
   }
 
-  async deleteReview(initiatorId: number, userId: number, bookId: number, force?: boolean) {
+  async delete(initiatorId: number, userId: number, bookId: number, force?: boolean) {
     if (initiatorId !== userId && !force)
       throw new ForbiddenException();
 

@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   SerializeOptions,
   UseGuards,
   UseInterceptors,
@@ -21,6 +22,8 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import GenreModel from './genre.model';
 import { Public } from '../auth/decorators/public.decorator';
 import GenreUpdateDto from './dtos/genre-update.dto';
+import BookModel from '../book/book.model';
+import BooksQueryDto from '../book/dtos/books-query.dto';
 
 @ApiTags('genre')
 @ApiBearerAuth()
@@ -39,38 +42,47 @@ export class GenreController {
   @ApiResponse({ type: GenreModel })
   @Roles(Role.Admin)
   @Post()
-  async createGenre(@Body() dto: GenreCreationDto) {
-    return this.genreService.createGenre(dto);
+  async create(@Body() dto: GenreCreationDto) {
+    return this.genreService.create(dto);
   }
 
-  @ApiOperation({ summary: 'get genre' })
+  @ApiOperation({ summary: 'get genre (public)' })
   @ApiResponse({ type: GenreModel })
-  @Roles(Role.Reader)
+  @Public()
   @Get(':id')
-  async getGenre(@Param('id') name: string) {
-    return this.genreService.getGenre(name);
+  async get(@Param('id') name: string) {
+    return this.genreService.get(name);
   }
 
   @ApiOperation({ summary: 'update genre (admin)' })
   @Roles(Role.Admin)
   @Put(':id')
-  async updateGenre(@Param('id') name: string,
-                    @Body() dto: GenreUpdateDto) {
-    await this.genreService.updateGenre(name, dto.description);
+  async update(@Param('id') name: string,
+               @Body() dto: GenreUpdateDto) {
+    await this.genreService.update(name, dto.description);
   }
 
   @ApiOperation({ summary: 'delete genre (admin)' })
   @Roles(Role.Admin)
   @Delete(':id')
-  async deleteGenre(@Param('id') name: string) {
-    await this.genreService.deleteGenre(name);
+  async delete(@Param('id') name: string) {
+    await this.genreService.delete(name);
   }
 
-  @ApiOperation({ summary: 'list genres' })
+  @ApiOperation({ summary: 'list genres (public)' })
   @ApiResponse({ type: [GenreModel] })
   @Public()
   @Get('list')
-  async listGenres() {
-    return this.genreService.getAllGenres();
+  async list() {
+    return this.genreService.getAll();
+  }
+
+  @ApiOperation({ summary: 'get genre books (public)' })
+  @ApiResponse({ type: [BookModel] })
+  @Public()
+  @Get(':id/books')
+  async findGenreBooks(@Param('id') name: string,
+                       @Query() dto: BooksQueryDto) {
+    return this.genreService.getGenreBooks(name, dto);
   }
 }

@@ -3,12 +3,16 @@ import { ValidationError } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import GenreModel from './genre.model';
 import { GenreCreationT } from './types/genre-creation.type';
+import { extractBooksOrder } from '../../common/utils/extract-order';
+import BooksQueryDto from '../book/dtos/books-query.dto';
+import UserModel from '../user/user.model';
+import toBoolean from '../../common/utils/toBoolean';
 
 @Injectable()
 export class GenreService {
   constructor(@InjectModel(GenreModel) private genreRepo: typeof GenreModel) {}
 
-  async createGenre(dto: GenreCreationT) {
+  async create(dto: GenreCreationT) {
     try {
       return await this.genreRepo.create(dto);
     } catch (error) {
@@ -18,14 +22,14 @@ export class GenreService {
     }
   }
 
-  async getGenre(name: string) {
+  async get(name: string) {
     const genre = await this.genreRepo.findByPk(name);
     if (!genre)
       throw new NotFoundException();
     return genre;
   }
 
-  async updateGenre(name: string, description: string) {
+  async update(name: string, description: string) {
     const updated = await this.genreRepo.update({ description }, { where: { name } });
     Logger.log(`genres updated: ${updated}`, GenreService.name);
     if (!updated) {
@@ -34,7 +38,7 @@ export class GenreService {
     }
   }
 
-  async deleteGenre(name: string) {
+  async delete(name: string) {
     const destroyed = await this.genreRepo.destroy({ where: { name } });
     Logger.log(`genres destroyed: ${destroyed}`, GenreService.name);
     if (!destroyed) {
@@ -43,7 +47,24 @@ export class GenreService {
     }
   }
 
-  async getAllGenres() {
+  async getAll() {
     return this.genreRepo.findAll();
+  }
+
+  async getGenreBooks(name: string, dto: BooksQueryDto) {
+    const genre = await this.genreRepo.findByPk(name);
+    if (!genre)
+      throw new NotFoundException();
+
+    try {
+      return await genre.$get('books', {
+        limit: dto.limit,
+        offset: dto.offset,
+        order: extractBooksOrder(dto),
+        include: toBoolean(dto.eager) ? [UserModel] : undefined,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }
