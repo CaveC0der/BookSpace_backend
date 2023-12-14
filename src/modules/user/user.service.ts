@@ -50,7 +50,7 @@ export class UserService {
   }
 
   async update(id: number, dto: UserUpdateDto) {
-    dto.password &&= await bcryptjs.hash(dto.password, this.config.HASH_PASSWORD_SALT);
+    dto.password &&= await bcryptjs.hash(dto.password, this.config.SALT_LENGTH);
 
     const user = await this.userRepo.findByPk(id);
     if (!user)

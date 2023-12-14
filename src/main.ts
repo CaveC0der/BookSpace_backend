@@ -15,7 +15,7 @@ async function start() {
   app.use(helmet());
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useStaticAssets(config.SERVE_STATIC.PATH, { prefix: config.SERVE_STATIC.PREFIX });
+  app.useStaticAssets(config.SERVE_STATIC_PATH, { prefix: config.SERVE_STATIC_PREFIX });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('BookSpace')

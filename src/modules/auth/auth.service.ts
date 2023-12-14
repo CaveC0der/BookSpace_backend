@@ -21,7 +21,7 @@ export class AuthService {
     if (await this.userService.getByEmail(dto.email))
       throw new BadRequestException('user already exists');
 
-    dto.password = await bcryptjs.hash(dto.password, this.config.HASH_PASSWORD_SALT);
+    dto.password = await bcryptjs.hash(dto.password, this.config.SALT_LENGTH);
     const user = await this.userService.create(dto);
     const roles = await user.$get('roles');
     const payload: TokenPayloadT = { id: user.id, roles: roles.map(role => role.name) };

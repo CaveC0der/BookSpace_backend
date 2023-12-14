@@ -24,15 +24,19 @@ import GenreModel from './genre/genre.model';
 import { BookGenreModel } from './genre/book-genre.model';
 import RoleModel from './role/role.model';
 import { UserRoleModel } from './role/user-role.model';
+import { ConfigValidationSchema } from '../common/joi/config-validation-schema';
 
 @Module({
   imports: [
-    DefaultConfigModule.forRoot({ cache: true }),
+    DefaultConfigModule.forRoot({
+      validationSchema: ConfigValidationSchema,
+      cache: true,
+    }),
     ConfigModule,
     SequelizeModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        ...config.DB,
+        ...config.SEQUELIZE_OPTIONS,
         models: [
           UserModel, TokenModel, RoleModel, UserRoleModel, BookModel,
           GenreModel, BookGenreModel, ViewModel, ReviewModel, CommentModel,
@@ -43,7 +47,7 @@ import { UserRoleModel } from './role/user-role.model';
     }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => [config.THROTTLER],
+      useFactory: (config: ConfigService) => [config.THROTTLER_OPTIONS],
     }),
     JwtModule,
     AuthModule,

@@ -28,16 +28,16 @@ export class TokenService {
   async genAccessToken(payload: TokenPayloadT) {
     return this.jwtService.signAsync(payload, {
       algorithm: this.config.JWT_ALGORITHM,
-      secret: this.config.JWT_ACCESS.SECRET,
-      expiresIn: this.config.JWT_ACCESS.EXPIRES_IN,
+      secret: this.config.JWT_ACCESS_SECRET,
+      expiresIn: this.config.JWT_ACCESS_EXPIRES_IN,
     });
   }
 
   async genRefreshToken(payload: TokenPayloadT) {
     return this.jwtService.signAsync(payload, {
       algorithm: this.config.JWT_ALGORITHM,
-      secret: this.config.JWT_REFRESH.SECRET,
-      expiresIn: this.config.JWT_REFRESH.EXPIRES_IN,
+      secret: this.config.JWT_REFRESH_SECRET,
+      expiresIn: this.config.JWT_REFRESH_EXPIRES_IN,
     });
   }
 
@@ -54,7 +54,7 @@ export class TokenService {
     try {
       const payload: TokenPayloadT = await this.jwtService.verifyAsync(token, {
         algorithms: [this.config.JWT_ALGORITHM],
-        secret: this.config[`JWT_${type}`].SECRET,
+        secret: this.config[`JWT_${type}_SECRET`],
       });
       payload.admin = payload.roles.includes(Role.Admin);
       return payload;

@@ -12,7 +12,7 @@ export class FileService {
     const filename = uuid.v4() + this.extractFileExtension(file.originalname);
 
     try {
-      await fs.writeFile(path.join(this.config.SERVE_STATIC.PATH, filename), file.buffer);
+      await fs.writeFile(path.join(this.config.SERVE_STATIC_PATH, filename), file.buffer);
       return filename;
     } catch (error) {
       Logger.error(error.message);
@@ -22,7 +22,7 @@ export class FileService {
 
   async delete(filename: string) {
     try {
-      await fs.unlink(path.join(this.config.SERVE_STATIC.PATH, filename));
+      await fs.unlink(path.join(this.config.SERVE_STATIC_PATH, filename));
     } catch (error) {
       Logger.error(`Deletion of file ${filename} failed: ${error.message}`, FileService.name);
       throw new InternalServerErrorException(error.message);
