@@ -1,11 +1,11 @@
 import { NestApplication, NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import { ConfigService } from './modules/config/config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+import { ConfigService } from './config/config.service';
 
 async function start() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
@@ -23,7 +23,7 @@ async function start() {
     .setContact('', '', 'korgrbackup@gmail')
     .setVersion('0.1')
     .addBearerAuth()
-    .addCookieAuth(config.COOKIE_NAME)
+    .addCookieAuth(config.COOKIE_NAME, { type: 'apiKey', description: 'does not work in browser, use generated curl' })
     .build();
   const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, swaggerDoc);
