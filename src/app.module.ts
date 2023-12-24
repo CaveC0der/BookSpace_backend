@@ -1,30 +1,30 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as DefaultConfigModule } from '@nestjs/config';
-import { UserModule } from './user/user.module';
-import { BookModule } from './book/book.module';
-import { TokenModule } from './token/token.module';
-import { RoleModule } from './role/role.module';
-import { ReviewModule } from './review/review.module';
-import { CommentModule } from './comment/comment.module';
-import { GenreModule } from './genre/genre.module';
 import { SequelizeModule } from '@nestjs/sequelize';
-import UserModel from './user/user.model';
-import TokenModel from './token/token.model';
-import BookModel from './book/book.model';
-import { ViewModel } from './book/view.model';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from './config/config.module';
-import ReviewModel from './review/review.model';
-import CommentModel from './comment/comment.model';
 import { ConfigService } from './config/config.service';
 import { JwtModule } from '@nestjs/jwt';
-import { FileModule } from './file/file.module';
 import { ThrottlerModule } from '@nestjs/throttler';
-import GenreModel from './genre/genre.model';
-import { BookGenreModel } from './genre/book-genre.model';
-import RoleModel from './role/role.model';
-import { UserRoleModel } from './role/user-role.model';
 import { ConfigValidationSchema } from './shared/joi/config-validation-schema';
+import UserModel from './users/user.model';
+import TokenModel from './tokens/token.model';
+import RoleModel from './roles/models/role.model';
+import { UserRoleModel } from './roles/models/user-role.model';
+import BookModel from './books/models/book.model';
+import GenreModel from './genres/models/genre.model';
+import { BookGenreModel } from './genres/models/book-genre.model';
+import { ViewModel } from './books/models/view.model';
+import ReviewModel from './reviews/review.model';
+import CommentModel from './comments/comment.model';
+import { UsersModule } from './users/users.module';
+import { BooksModule } from './books/books.module';
+import { TokensModule } from './tokens/tokens.module';
+import { RolesModule } from './roles/roles.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { CommentsModule } from './comments/comments.module';
+import { GenresModule } from './genres/genres.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -41,6 +41,7 @@ import { ConfigValidationSchema } from './shared/joi/config-validation-schema';
           UserModel, TokenModel, RoleModel, UserRoleModel, BookModel,
           GenreModel, BookGenreModel, ViewModel, ReviewModel, CommentModel,
         ],
+        logging: false,
         // autoLoadModels: true,
         // sync: { force: true },
       }),
@@ -51,14 +52,14 @@ import { ConfigValidationSchema } from './shared/joi/config-validation-schema';
     }),
     JwtModule,
     AuthModule,
-    UserModule,
-    BookModule,
-    TokenModule,
-    RoleModule,
-    ReviewModule,
-    CommentModule,
-    GenreModule,
-    FileModule,
+    UsersModule,
+    BooksModule,
+    TokensModule,
+    RolesModule,
+    ReviewsModule,
+    CommentsModule,
+    GenresModule,
+    FilesModule,
   ],
 })
 export class AppModule {}

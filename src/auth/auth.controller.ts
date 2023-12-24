@@ -1,9 +1,7 @@
-import { Body, Controller, Delete, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { ConfigService } from '../config/config.service';
-import { TokenPayload } from '../token/decorators/token-payload.decorator';
-import { Token } from '../token/decorators/token.decorator';
 import { ApiBearerAuth, ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import SignupResponseDto from './dtos/signup-response.dto';
 import SignupRequestDto from './dtos/signup-request.dto';
@@ -11,6 +9,8 @@ import LoginResponseDto from './dtos/login-response.dto';
 import LoginRequestDto from './dtos/login-request.dto';
 import RefreshGuard from './guards/refresh.guard';
 import AuthGuard from './guards/auth.guard';
+import { TokenPayload } from '../tokens/decorators/token-payload.decorator';
+import { Token } from '../tokens/decorators/token.decorator';
 
 @ApiTags('auth')
 @ApiResponse({ status: 401, description: 'unauthorized' })
@@ -66,7 +66,7 @@ export class AuthController {
   @ApiOperation({ summary: 'refresh' })
   @ApiResponse({ status: 200, type: LoginResponseDto })
   @UseGuards(RefreshGuard)
-  @Put('refresh')
+  @Post('refresh')
   async refresh(@TokenPayload('id') id: number,
                 @Token('refresh') token: string,
                 @Res({ passthrough: true }) res: Response): Promise<LoginResponseDto> {

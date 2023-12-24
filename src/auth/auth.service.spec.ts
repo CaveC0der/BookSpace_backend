@@ -1,13 +1,13 @@
 import { AuthService } from './auth.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from '../user/user.service';
 import { ConfigService } from '../config/config.service';
-import { TokenService } from '../token/token.service';
 import { BadRequestException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
-import { TokenPayloadT } from '../token/types/token-payload.type';
 import SignupResponseDto from './dtos/signup-response.dto';
 import LoginResponseDto from './dtos/login-response.dto';
+import { TokenPayloadT } from '../tokens/types/token-payload.type';
+import { UsersService } from '../users/users.service';
+import { TokensService } from '../tokens/tokens.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -50,7 +50,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: UserService,
+          provide: UsersService,
           useValue: mockUserService,
         },
         {
@@ -58,7 +58,7 @@ describe('AuthService', () => {
           useValue: mockConfig,
         },
         {
-          provide: TokenService,
+          provide: TokensService,
           useValue: mockTokenService,
         },
       ],

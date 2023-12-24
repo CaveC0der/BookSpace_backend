@@ -1,6 +1,6 @@
 import LoginResponseDto from './login-response.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TokenPayloadT } from '../../token/types/token-payload.type';
+import { TokenPayloadT } from '../../tokens/types/token-payload.type';
 
 export default class SignupResponseDto implements Omit<LoginResponseDto, 'username'> {
   @ApiProperty() id: number;

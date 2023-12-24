@@ -1,18 +1,18 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { TokenService } from '../../token/token.service';
+import { TokensService } from '../../tokens/tokens.service';
 
 @Injectable()
 export default class RefreshGuard implements CanActivate {
-  constructor(private tokenService: TokenService) {}
+  constructor(private tokensService: TokensService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    const token = this.tokenService.extractRefreshToken(req);
+    const token = this.tokensService.extractRefreshToken(req);
 
     if (!token)
       throw new UnauthorizedException();
 
-    req.payload = await this.tokenService.verifyToken(token, 'REFRESH');
+    req.payload = await this.tokensService.verifyToken(token, 'REFRESH');
 
     if (!req.payload)
       throw new UnauthorizedException();

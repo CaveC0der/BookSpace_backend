@@ -1,5 +1,5 @@
-import { TokenPayloadT } from '../../token/types/token-payload.type';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TokenPayloadT } from '../../tokens/types/token-payload.type';
 
 export default class LoginResponseDto implements TokenPayloadT {
   @ApiProperty() id: number;

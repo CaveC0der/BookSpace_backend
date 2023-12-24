@@ -57,7 +57,7 @@ export class ConfigService {
   }
 
   get SERVE_STATIC_PATH(): string {
-    return join(__dirname, '../../..', this.defaultConfigService.getOrThrow('SERVE_STATIC_FOLDER'));
+    return join(__dirname, '../..', this.defaultConfigService.getOrThrow('SERVE_STATIC_FOLDER'));
   }
 
   get SERVE_STATIC_PREFIX(): string {
