@@ -80,8 +80,6 @@ export default class ReviewModel extends Model<ReviewModel, ReviewCreationT> {
     }) as unknown as InDecrementReturnType<UserModel>; // .increment has wrong return type
     if (!affected)
       Logger.error('@AfterCreate failed', ReviewModel.name);
-    else
-      Logger.log(`Users affected: ${affected}`, ReviewModel.name);
   }
 
   @AfterUpdate
@@ -113,7 +111,5 @@ export default class ReviewModel extends Model<ReviewModel, ReviewCreationT> {
     }) as unknown as InDecrementReturnType<BookModel>;
     if (!usersAffected || !booksAffected)
       Logger.error('@AfterDestroy failed', ReviewModel.name);
-    else
-      Logger.log(`Users affected: ${usersAffected}, Books affected: ${booksAffected}`, ReviewModel.name);
   }
 }

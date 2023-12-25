@@ -51,7 +51,7 @@ export class GenresController {
   @Public()
   @Get()
   async getAll() {
-    return this.genresService.getAll();
+    return this.genresService.getMany();
   }
 
   @ApiOperation({ summary: 'get genre (public)' })

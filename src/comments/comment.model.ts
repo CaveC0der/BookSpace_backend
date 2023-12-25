@@ -66,8 +66,6 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
     }) as unknown as InDecrementReturnType<BookModel>;
     if (!affected)
       Logger.error('@AfterCreate failed', CommentModel.name);
-    else
-      Logger.log(`Books affected: ${affected}`, CommentModel.name);
   }
 
   @AfterDestroy
@@ -78,7 +76,5 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
     }) as unknown as InDecrementReturnType<BookModel>;
     if (!affected)
       Logger.error('@AfterDestroy failed', CommentModel.name);
-    else
-      Logger.log(`Books affected: ${affected}`, CommentModel.name);
   }
 }

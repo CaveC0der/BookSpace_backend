@@ -1,5 +1,5 @@
 import { IsOptional, Length, Max, Min } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ReviewUpdateT } from '../types/review-update.type';
 
 export default class ReviewUpdateDto implements ReviewUpdateT {

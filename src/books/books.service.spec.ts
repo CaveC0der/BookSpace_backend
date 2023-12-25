@@ -65,9 +65,13 @@ describe('BooksService', () => {
   };
   const mockGenre = {
     name: 'Fantasy',
-    description: 'Wonderful...',
   };
-  const mockGenreService = { getMany: jest.fn().mockImplementation(() => [mockGenre]) };
+  const mockGenres = [mockGenre, { name: 'Romance' }, { name: 'Drama' }];
+  const mockGenreService = {
+    getMany: jest.fn().mockImplementation((names?: string[]) => {
+      return names ? mockGenres.filter(g => names.includes(g.name)) : mockGenres;
+    }),
+  };
   const mockFile = { originalname: 'originalname.png' } as Express.Multer.File;
   const mockValidationError = new ValidationError('mock validation failed', [{
     message: 'mock',
@@ -298,20 +302,27 @@ describe('BooksService', () => {
       await expect(service.excludeGenres(0, mockBook.id, ['Fantasy'], true)).resolves.toBeUndefined();
     });
 
-    it('user not found', async () => {
-      mockBookRepo.findByPk.mockImplementationOnce(() => null)
+    it('book not found', async () => {
+      mockBookRepo.findByPk
+        .mockImplementationOnce(() => null)
         .mockImplementationOnce(() => null);
 
       await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
       await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
     });
 
-    it('genre not found', async () => {
-      mockGenreService.getMany.mockImplementationOnce(() => { throw new NotFoundException(); })
-        .mockImplementationOnce(() => { throw new NotFoundException(); });
+    it('non-existent genre', async () => {
+      await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Fantasy', 'Rock'])).resolves.toBeUndefined();
+      expect(mockGenreService.getMany).toHaveLastReturnedWith([{ name: 'Fantasy' }]);
 
-      await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
-      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
+      await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Rock'])).resolves.toBeUndefined();
+      expect(mockGenreService.getMany).toHaveLastReturnedWith([]);
+
+      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Romance', 'Metal'])).resolves.toBeUndefined();
+      expect(mockGenreService.getMany).toHaveLastReturnedWith([{ name: 'Romance' }]);
+
+      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Metal'])).resolves.toBeUndefined();
+      expect(mockGenreService.getMany).toHaveLastReturnedWith([]);
     });
   });
 

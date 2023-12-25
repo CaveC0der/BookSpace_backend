@@ -41,7 +41,5 @@ export class ViewModel extends Model<ViewModel, ViewCreationT> {
     }) as unknown as InDecrementReturnType<BookModel>;
     if (!usersAffected || !booksAffected)
       Logger.error('@AfterCreate failed', ViewModel.name);
-    else
-      Logger.log(`Users affected: ${usersAffected}, Books affected: ${booksAffected}`, ViewModel.name);
   }
 }

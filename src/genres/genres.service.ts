@@ -29,13 +29,12 @@ export class GenresService {
     return genre;
   }
 
-  async getMany(names: string[]) {
-    return this.genreRepo.findAll({ where: { name: { [Op.in]: names } } });
+  async getMany(names?: string[]) {
+    return this.genreRepo.findAll({ where: names && { name: { [Op.in]: names } } });
   }
 
   async update(name: string, description: string) {
     const updated = await this.genreRepo.update({ description }, { where: { name } });
-    Logger.log(`genres updated: ${updated}`, GenresService.name);
     if (!updated) {
       Logger.error(`updateGenre(${name}) failed`, GenresService.name);
       throw new NotFoundException();
@@ -44,15 +43,10 @@ export class GenresService {
 
   async delete(name: string) {
     const destroyed = await this.genreRepo.destroy({ where: { name } });
-    Logger.log(`genres destroyed: ${destroyed}`, GenresService.name);
     if (!destroyed) {
       Logger.error(`deleteGenre(${name}) failed`, GenresService.name);
       throw new NotFoundException();
     }
-  }
-
-  async getAll() {
-    return this.genreRepo.findAll();
   }
 
   async getGenreBooks(name: string, dto: BooksQueryDto) {

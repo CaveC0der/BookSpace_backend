@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/sequelize';
-import { ValidationError, ValidationErrorItem } from 'sequelize';
+import { Op, ValidationError, ValidationErrorItem } from 'sequelize';
 import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { GenresService } from './genres.service';
 import GenreModel from './models/genre.model';
 import BooksQueryDto from '../books/dtos/books-query.dto';
 import UserModel from '../users/user.model';
+import { WhereAttributeHash } from 'sequelize/types/model';
 
 describe('GenreService', () => {
   let service: GenresService;
@@ -20,6 +21,7 @@ describe('GenreService', () => {
     name: 'Fantasy',
     $get: jest.fn().mockImplementation(() => [mockUser]),
   };
+  const mockGenres = [{ name: mockGenre.name }, { name: 'Romance' }, { name: 'Drama' }];
   const returnMockGenre = jest.fn().mockImplementation(() => mockGenre);
   const returnAffectedMockGenres = jest.fn().mockImplementation(() => 1);
   const mockGenreRepo = {
@@ -27,7 +29,13 @@ describe('GenreService', () => {
     findByPk: returnMockGenre,
     update: returnAffectedMockGenres,
     destroy: returnAffectedMockGenres,
-    findAll: jest.fn().mockImplementation(() => [mockGenre]),
+    findAll: jest.fn().mockImplementation(({ where }: { where?: WhereAttributeHash<GenreModel> }) => {
+      if (where) {
+        const names = Object.getOwnPropertyDescriptor(where.name, Op.in)!.value;
+        return mockGenres.filter(g => names.includes(g.name));
+      }
+      return mockGenres;
+    }),
   };
   const mockValidationError = new ValidationError('mock validation failed', [{
     message: 'mock',
@@ -82,6 +90,24 @@ describe('GenreService', () => {
     });
   });
 
+  describe('getMany', () => {
+    it('normal', async () => {
+      await expect(service.getMany(['Fantasy', 'Romance'])).resolves.toEqual([{ name: 'Fantasy' }, { name: 'Romance' }]);
+    });
+
+    it('normal - all', async () => {
+      await expect(service.getMany()).resolves.toEqual(mockGenres);
+    });
+
+    it('existent + non-existent genre', async () => {
+      await expect(service.getMany(['Fantasy', 'Thriller'])).resolves.toEqual([{ name: 'Fantasy' }]);
+    });
+
+    it('non-existent genre', async () => {
+      await expect(service.getMany(['Thriller'])).resolves.toEqual([]);
+    });
+  });
+
   describe('update', () => {
     it('normal', async () => {
       await expect(service.update(mockGenre.name, '')).resolves.toBeUndefined();
@@ -103,12 +129,6 @@ describe('GenreService', () => {
       mockGenreRepo.update.mockImplementationOnce(() => 0);
 
       await expect(service.delete(mockGenre.name)).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('getAll', () => {
-    it('normal', async () => {
-      await expect(service.getAll()).resolves.toBeInstanceOf(Array);
     });
   });
 
