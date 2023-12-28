@@ -78,7 +78,7 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.create({
         username: mockUser.username,
         email: mockUser.email,
@@ -98,7 +98,7 @@ describe('UsersService', () => {
   });
 
   describe('get', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.safeGetById(mockUser.id)).resolves.toStrictEqual(mockUser);
       await expect(service.safeGetByEmail(mockUser.email)).resolves.toStrictEqual(mockUser);
     });
@@ -113,7 +113,7 @@ describe('UsersService', () => {
   });
 
   describe('update', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.update(mockUser.id, { password: 'new-password' })).resolves.toBeUndefined();
     });
 
@@ -131,7 +131,7 @@ describe('UsersService', () => {
   });
 
   describe('delete', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.delete(mockUser.id)).resolves.toBeUndefined();
     });
 
@@ -143,7 +143,7 @@ describe('UsersService', () => {
   });
 
   describe('restore', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.restore(mockUser.id)).resolves.toBeUndefined();
     });
 
@@ -155,7 +155,7 @@ describe('UsersService', () => {
   });
 
   describe('setAvatar', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.setAvatar(mockUser.id, mockFile)).resolves.toBeUndefined();
     });
 
@@ -185,7 +185,7 @@ describe('UsersService', () => {
   });
 
   describe('deleteAvatar', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.deleteAvatar(mockUser.id)).resolves.toBeUndefined();
     });
 
@@ -209,7 +209,7 @@ describe('UsersService', () => {
   });
 
   describe('addRole / excludeRole', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.addRole(mockUser.id, Role.Author)).resolves.toBeUndefined();
       await expect(service.excludeRole(mockUser.id, Role.Author)).resolves.toBeUndefined();
     });

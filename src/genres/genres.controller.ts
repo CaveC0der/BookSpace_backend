@@ -25,7 +25,7 @@ import { Role } from '../roles/role.enum';
 import BookModel from '../books/models/book.model';
 import BooksQueryDto from '../books/dtos/books-query.dto';
 
-@ApiTags('genre')
+@ApiTags('genres')
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })

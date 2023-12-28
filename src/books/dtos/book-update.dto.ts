@@ -12,4 +12,9 @@ export default class BookUpdateDto implements BookUpdateT {
   @IsOptional()
   @Length(1, 255)
   synopsis?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Length(1, 48, { each: true })
+  genres?: string[];
 }

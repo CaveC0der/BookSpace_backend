@@ -12,16 +12,6 @@ import UsersQueryDto from '../users/dtos/users-query.dto';
 export class RolesService {
   constructor(@InjectModel(RoleModel) private roleRepo: typeof RoleModel) {}
 
-  async create(dto: RoleCreationT) {
-    try {
-      return await this.roleRepo.create(dto);
-    } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
-    }
-  }
-
   async get(name: Role) {
     const role = await this.roleRepo.findByPk(name);
     if (!role)
@@ -33,14 +23,6 @@ export class RolesService {
     const updated = await this.roleRepo.update({ description }, { where: { name } });
     if (!updated) {
       Logger.error(`updateRole(${name}) failed`, RolesService.name);
-      throw new NotFoundException();
-    }
-  }
-
-  async delete(name: Role) {
-    const destroyed = await this.roleRepo.destroy({ where: { name } });
-    if (!destroyed) {
-      Logger.error(`deleteRole(${name}) failed`, RolesService.name);
       throw new NotFoundException();
     }
   }

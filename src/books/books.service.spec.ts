@@ -35,6 +35,7 @@ describe('BooksService', () => {
     update: jest.fn(),
     destroy: jest.fn(),
     restore: jest.fn(),
+    $set: jest.fn(),
     $add: jest.fn(),
     $remove: jest.fn(),
   };
@@ -124,8 +125,11 @@ describe('BooksService', () => {
   });
 
   describe('create', () => {
-    it('normal', async () => {
-      await expect(service.create(mockBook.authorId, { name: mockBook.name })).resolves.toStrictEqual(mockBook);
+    it('success', async () => {
+      await expect(service.create(mockBook.authorId, {
+        name: mockBook.name,
+        genres: ['Mock'],
+      })).resolves.toStrictEqual(mockBook);
     });
 
     it('validation error / already exists', async () => {
@@ -136,7 +140,7 @@ describe('BooksService', () => {
   });
 
   describe('get', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.get(mockBook.id)).resolves.toStrictEqual(mockBook);
       await expect(service.get(mockBook.id, mockBook.authorId)).resolves.toStrictEqual(mockBook);
     });
@@ -155,8 +159,11 @@ describe('BooksService', () => {
   });
 
   describe('update', () => {
-    it('normal', async () => {
-      await expect(service.update(mockBook.authorId, mockBook.id, { name: 'New mock name' })).resolves.toBeUndefined();
+    it('success', async () => {
+      await expect(service.update(mockBook.authorId, mockBook.id, {
+        name: 'New mock name',
+        genres: ['Mock'],
+      })).resolves.toBeUndefined();
     });
 
     it('not author', async () => {
@@ -181,7 +188,7 @@ describe('BooksService', () => {
   });
 
   describe('delete', () => {
-    it('normal + hard', async () => {
+    it('success', async () => {
       await expect(service.delete(mockBook.authorId, mockBook.id, true)).resolves.toBeUndefined();
     });
 
@@ -201,7 +208,7 @@ describe('BooksService', () => {
   });
 
   describe('restore', () => {
-    it('normal + hard', async () => {
+    it('success', async () => {
       await expect(service.restore(mockBook.authorId, mockBook.id)).resolves.toBeUndefined();
     });
 
@@ -221,7 +228,7 @@ describe('BooksService', () => {
   });
 
   describe('setCover', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.setCover(mockBook.authorId, mockBook.id, mockFile)).resolves.toBeUndefined();
     });
 
@@ -255,7 +262,7 @@ describe('BooksService', () => {
   });
 
   describe('deleteCover', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.deleteCover(mockBook.authorId, mockBook.id)).resolves.toBeUndefined();
     });
 
@@ -286,20 +293,20 @@ describe('BooksService', () => {
     });
   });
 
-  describe('addGenres / excludeGenres', () => {
+  describe('addGenres / removeGenres', () => {
     it('normal', async () => {
       await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).resolves.toBeUndefined();
-      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).resolves.toBeUndefined();
+      await expect(service.removeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).resolves.toBeUndefined();
     });
 
     it('not author', async () => {
       await expect(service.addGenres(0, mockBook.id, ['Fantasy'])).rejects.toThrow(ForbiddenException);
-      await expect(service.excludeGenres(0, mockBook.id, ['Fantasy'])).rejects.toThrow(ForbiddenException);
+      await expect(service.removeGenres(0, mockBook.id, ['Fantasy'])).rejects.toThrow(ForbiddenException);
     });
 
     it('not author + admin', async () => {
       await expect(service.addGenres(0, mockBook.id, ['Fantasy'], true)).resolves.toBeUndefined();
-      await expect(service.excludeGenres(0, mockBook.id, ['Fantasy'], true)).resolves.toBeUndefined();
+      await expect(service.removeGenres(0, mockBook.id, ['Fantasy'], true)).resolves.toBeUndefined();
     });
 
     it('book not found', async () => {
@@ -308,7 +315,7 @@ describe('BooksService', () => {
         .mockImplementationOnce(() => null);
 
       await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
-      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
+      await expect(service.removeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).rejects.toThrow(NotFoundException);
     });
 
     it('non-existent genre', async () => {
@@ -318,10 +325,10 @@ describe('BooksService', () => {
       await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Rock'])).resolves.toBeUndefined();
       expect(mockGenreService.getMany).toHaveLastReturnedWith([]);
 
-      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Romance', 'Metal'])).resolves.toBeUndefined();
+      await expect(service.removeGenres(mockBook.authorId, mockBook.id, ['Romance', 'Metal'])).resolves.toBeUndefined();
       expect(mockGenreService.getMany).toHaveLastReturnedWith([{ name: 'Romance' }]);
 
-      await expect(service.excludeGenres(mockBook.authorId, mockBook.id, ['Metal'])).resolves.toBeUndefined();
+      await expect(service.removeGenres(mockBook.authorId, mockBook.id, ['Metal'])).resolves.toBeUndefined();
       expect(mockGenreService.getMany).toHaveLastReturnedWith([]);
     });
   });

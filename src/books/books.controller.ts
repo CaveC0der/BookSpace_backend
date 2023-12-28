@@ -32,7 +32,7 @@ import { TokenPayload } from '../tokens/decorators/token-payload.decorator';
 import { TokenPayloadT } from '../tokens/types/token-payload.type';
 import GenresDto from '../genres/dtos/genres.dto';
 
-@ApiTags('book')
+@ApiTags('books')
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })
@@ -135,12 +135,12 @@ export class BooksController {
     await this.booksService.addGenres(payload.id, bookId, dto.names, payload.admin);
   }
 
-  @ApiOperation({ summary: 'exclude genre (author, admin)', description: 'ignores non-existing genres' })
+  @ApiOperation({ summary: 'remove genres (author, admin)', description: 'ignores non-existing genres' })
   @Roles(Role.Author, Role.Admin)
   @Delete(':id/genres')
-  async excludeGenres(@TokenPayload() payload: TokenPayloadT,
-                      @Param('id', ParseIntPipe) bookId: number,
-                      @Query() dto: GenresDto) {
-    await this.booksService.excludeGenres(payload.id, bookId, dto.names, payload.admin);
+  async removeGenres(@TokenPayload() payload: TokenPayloadT,
+                     @Param('id', ParseIntPipe) bookId: number,
+                     @Query() dto: GenresDto) {
+    await this.booksService.removeGenres(payload.id, bookId, dto.names, payload.admin);
   }
 }

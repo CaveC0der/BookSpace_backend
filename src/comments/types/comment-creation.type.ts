@@ -1,5 +1,5 @@
 export type CommentCreationT = {
-  userId?: number
+  userId: number
   bookId: number
   text: string
 }

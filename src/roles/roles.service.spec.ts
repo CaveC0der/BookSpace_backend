@@ -20,23 +20,11 @@ describe('RolesService', () => {
     name: Role.Admin,
     $get: jest.fn().mockImplementation(() => [mockUser]),
   };
-  const returnMockRole = jest.fn().mockImplementation(() => mockRole);
-  const returnAffectedMockRoles = jest.fn().mockImplementation(() => 1);
   const mockRoleRepo = {
-    create: returnMockRole,
-    findByPk: returnMockRole,
-    update: returnAffectedMockRoles,
-    destroy: returnAffectedMockRoles,
+    findByPk: jest.fn().mockImplementation(() => mockRole),
+    update: jest.fn().mockImplementation(() => 1),
     findAll: jest.fn().mockImplementation(() => [mockRole]),
   };
-  const mockValidationError = new ValidationError('mock validation failed', [{
-    message: 'mock',
-    type: 'mock',
-    path: 'mock',
-    value: 'mock@mail.com',
-    origin: 'DB',
-    validatorKey: 'mock',
-  } as unknown as ValidationErrorItem]);
 
   beforeAll(async () => {
     jest.spyOn(Logger, 'error').mockImplementation(() => undefined);
@@ -58,20 +46,8 @@ describe('RolesService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('create', () => {
-    it('normal', async () => {
-      await expect(service.create(mockRole)).resolves.toStrictEqual(mockRole);
-    });
-
-    it('validation error / already exists', async () => {
-      mockRoleRepo.create.mockImplementationOnce(() => { throw mockValidationError; });
-
-      await expect(service.create(mockRole)).rejects.toThrow(BadRequestException);
-    });
-  });
-
   describe('get', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.get(mockRole.name)).resolves.toStrictEqual(mockRole);
     });
 
@@ -83,7 +59,7 @@ describe('RolesService', () => {
   });
 
   describe('update', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.update(mockRole.name, '')).resolves.toBeUndefined();
     });
 
@@ -94,26 +70,14 @@ describe('RolesService', () => {
     });
   });
 
-  describe('delete', () => {
-    it('normal', async () => {
-      await expect(service.delete(mockRole.name)).resolves.toBeUndefined();
-    });
-
-    it('not found', async () => {
-      mockRoleRepo.update.mockImplementationOnce(() => 0);
-
-      await expect(service.delete(mockRole.name)).rejects.toThrow(NotFoundException);
-    });
-  });
-
   describe('getAll', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.getAll()).resolves.toBeInstanceOf(Array);
     });
   });
 
   describe('getRoleUsers', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.getRoleUsers(mockRole.name, {})).resolves.toBeInstanceOf(Array);
     });
 

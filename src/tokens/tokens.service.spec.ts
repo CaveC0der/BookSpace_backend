@@ -62,7 +62,7 @@ describe('TokensService', () => {
   });
 
   describe('extractAccessToken', () => {
-    it('normal => string', () => {
+    it('success', () => {
       expect(service.extractAccessToken({ headers: { authorization: 'Bearer mock-token' } } as Request)).toBe('mock-token');
     });
 
@@ -76,7 +76,7 @@ describe('TokensService', () => {
   });
 
   describe('extractRefreshToken', () => {
-    it('normal', () => {
+    it('success', () => {
       expect(service.extractRefreshToken({ cookies: { [mockConfig.COOKIE_NAME]: 'mock-token' } } as Request)).toBe('mock-token');
     });
 
@@ -104,7 +104,7 @@ describe('TokensService', () => {
   });
 
   describe('deleteRefreshToken', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.deleteRefreshToken(mockTokenPayload.id)).resolves.toBeUndefined();
     });
 
@@ -116,7 +116,7 @@ describe('TokensService', () => {
   });
 
   describe('verifyToken', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.verifyToken('', 'ACCESS')).resolves.toStrictEqual(mockTokenPayload);
     });
 

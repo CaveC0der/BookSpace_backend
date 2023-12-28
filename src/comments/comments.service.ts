@@ -2,18 +2,18 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectModel } from '@nestjs/sequelize';
 import CommentModel from './comment.model';
 import { ValidationError } from 'sequelize';
-import { CommentCreationT } from './types/comment-creation.type';
 import { WhereOptions } from 'sequelize/types/model';
 import CommentsQueryDto from './dtos/comments-query.dto';
 import extractOrder from '../shared/utils/extract-order';
 import toBoolean from '../shared/utils/toBoolean';
 import UserModel from '../users/user.model';
+import CommentCreationDto from './dtos/comment-creation.dto';
 
 @Injectable()
 export class CommentsService {
   constructor(@InjectModel(CommentModel) private commentRepo: typeof CommentModel) {}
 
-  async create(userId: number, dto: CommentCreationT) {
+  async create(userId: number, dto: CommentCreationDto) {
     try {
       return await this.commentRepo.create({ ...dto, userId });
     } catch (error) {

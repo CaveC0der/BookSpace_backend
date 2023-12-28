@@ -24,7 +24,7 @@ describe('FilesService', () => {
   });
 
   describe('save', () => {
-    it('normal', async () => {
+    it('success', async () => {
       jest.spyOn(fs, 'writeFile').mockImplementationOnce(async () => undefined);
 
       expect(typeof (await service.save({ originalname: 'originalname.png' } as Express.Multer.File)))
@@ -48,7 +48,7 @@ describe('FilesService', () => {
   });
 
   describe('delete', () => {
-    it('normal', async () => {
+    it('success', async () => {
       jest.spyOn(fs, 'unlink').mockImplementationOnce(async () => undefined);
 
       await expect(service.delete('originalname.png')).resolves.toBeUndefined();

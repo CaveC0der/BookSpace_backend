@@ -1,5 +1,5 @@
 export type ReviewCreationT = {
-  userId?: number
+  userId: number
   bookId: number
   rate: number
   text?: string

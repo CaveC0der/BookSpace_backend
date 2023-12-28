@@ -29,15 +29,11 @@ export class AuthController {
                @Res({ passthrough: true }) res: Response): Promise<SignupResponseDto> {
     const { dto: resDto, refreshToken } = await this.authService.signup(dto);
 
-    res.cookie(
-      this.config.COOKIE_NAME,
-      refreshToken,
-      {
-        maxAge: this.config.COOKIE_MAX_AGE,
-        httpOnly: true,
-        sameSite: 'strict',
-      },
-    );
+    res.cookie(this.config.COOKIE_NAME, refreshToken, {
+      maxAge: this.config.COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: 'strict',
+    });
 
     return resDto;
   }
@@ -49,22 +45,18 @@ export class AuthController {
               @Res({ passthrough: true }) res: Response): Promise<LoginResponseDto> {
     const { dto: resDto, refreshToken } = await this.authService.login(dto);
 
-    res.cookie(
-      this.config.COOKIE_NAME,
-      refreshToken,
-      {
-        maxAge: this.config.COOKIE_MAX_AGE,
-        httpOnly: true,
-        sameSite: 'strict',
-      },
-    );
+    res.cookie(this.config.COOKIE_NAME, refreshToken, {
+      maxAge: this.config.COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: 'strict',
+    });
 
     return resDto;
   }
 
   @ApiCookieAuth()
   @ApiOperation({ summary: 'refresh' })
-  @ApiResponse({ status: 200, type: LoginResponseDto })
+  @ApiResponse({ status: 201, type: LoginResponseDto })
   @UseGuards(RefreshGuard)
   @Post('refresh')
   async refresh(@TokenPayload('id') id: number,
@@ -72,15 +64,11 @@ export class AuthController {
                 @Res({ passthrough: true }) res: Response): Promise<LoginResponseDto> {
     const { dto: resDto, refreshToken } = await this.authService.refresh(id, token);
 
-    res.cookie(
-      this.config.COOKIE_NAME,
-      refreshToken,
-      {
-        maxAge: this.config.COOKIE_MAX_AGE,
-        httpOnly: true,
-        sameSite: 'strict',
-      },
-    );
+    res.cookie(this.config.COOKIE_NAME, refreshToken, {
+      maxAge: this.config.COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: 'strict',
+    });
 
     return resDto;
   }

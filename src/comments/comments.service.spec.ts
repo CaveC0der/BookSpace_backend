@@ -59,7 +59,7 @@ describe('CommentsService', () => {
   });
 
   describe('create', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.create(mockUser.id, mockComment)).resolves.toStrictEqual(mockComment);
     });
 
@@ -71,7 +71,7 @@ describe('CommentsService', () => {
   });
 
   describe('get', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.get(mockComment.id)).resolves.toStrictEqual(mockComment);
     });
 
@@ -83,7 +83,7 @@ describe('CommentsService', () => {
   });
 
   describe('update', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.update(mockUser.id, mockComment.id, '')).resolves.toBeUndefined();
     });
 
@@ -105,7 +105,7 @@ describe('CommentsService', () => {
   });
 
   describe('delete', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.delete(mockUser.id, mockComment.id)).resolves.toBeUndefined();
     });
 
@@ -125,7 +125,7 @@ describe('CommentsService', () => {
   });
 
   describe('find', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.find({}, {})).resolves.toBeInstanceOf(Array);
     });
 

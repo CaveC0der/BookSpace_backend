@@ -27,7 +27,7 @@ import { Role } from '../roles/role.enum';
 import { TokenPayload } from '../tokens/decorators/token-payload.decorator';
 import { TokenPayloadT } from '../tokens/types/token-payload.type';
 
-@ApiTags('review')
+@ApiTags('reviews')
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })
@@ -36,7 +36,7 @@ import { TokenPayloadT } from '../tokens/types/token-payload.type';
 @UseGuards(AuthGuard, RolesGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @SerializeOptions({ strategy: 'excludeAll' })
-@Controller('review')
+@Controller('reviews')
 export class ReviewsController {
   constructor(private reviewsService: ReviewsService) {}
 
@@ -47,6 +47,49 @@ export class ReviewsController {
   async create(@TokenPayload('id') id: number,
                @Body() dto: ReviewCreationDto) {
     return this.reviewsService.create(id, dto);
+  }
+
+  @ApiOperation({ summary: 'get review' })
+  @ApiResponse({ status: 200, type: ReviewModel })
+  @Roles(Role.Reader)
+  @Get('me-:id')
+  async getMY(@TokenPayload('id') id: number,
+              @Param('id', ParseIntPipe) bookId: number) {
+    return this.reviewsService.get(id, bookId);
+  }
+
+  @ApiOperation({ summary: 'update review' })
+  @Roles(Role.Reader)
+  @Put('me-:id')
+  async updateMy(@TokenPayload('id') id: number,
+                 @Param('id', ParseIntPipe) bookId: number,
+                 @Body() dto: ReviewUpdateDto) {
+    await this.reviewsService.update(id, bookId, dto);
+  }
+
+  @ApiOperation({ summary: 'delete review' })
+  @Roles(Role.Reader)
+  @Delete('me-:id')
+  async deleteMy(@TokenPayload('id') id: number,
+                 @Param('id', ParseIntPipe) bookId: number) {
+    await this.reviewsService.delete(id, id, bookId);
+  }
+
+  @ApiOperation({ summary: 'get review (public)' })
+  @Public()
+  @Get(':userId-:bookId')
+  async get(@Param('userId', ParseIntPipe) userId: number,
+            @Param('bookId', ParseIntPipe) bookId: number) {
+    return this.reviewsService.get(userId, bookId);
+  }
+
+  @ApiOperation({ summary: 'delete review (admin)' })
+  @Roles(Role.Admin)
+  @Delete(':userId-:bookId')
+  async deleteUserReview(@TokenPayload() payload: TokenPayloadT,
+                         @Param('userId', ParseIntPipe) userId: number,
+                         @Param('bookId', ParseIntPipe) bookId: number) {
+    await this.reviewsService.delete(payload.id, userId, bookId, payload.admin);
   }
 
   @ApiOperation({ summary: 'get book reviews (public)' })
@@ -65,48 +108,5 @@ export class ReviewsController {
   async getUserReviews(@Param('id', ParseIntPipe) userId: number,
                        @Query() dto: ReviewsQueryDto) {
     return this.reviewsService.find({ userId }, dto);
-  }
-
-  @ApiOperation({ summary: 'get review' })
-  @ApiResponse({ status: 200, type: ReviewModel })
-  @Roles(Role.Reader)
-  @Get('my/books/:id')
-  async getMY(@TokenPayload('id') id: number,
-              @Param('id', ParseIntPipe) bookId: number) {
-    return this.reviewsService.get(id, bookId);
-  }
-
-  @ApiOperation({ summary: 'update review' })
-  @Roles(Role.Reader)
-  @Put('my/books/:id')
-  async updateMy(@TokenPayload('id') id: number,
-                 @Param('id', ParseIntPipe) bookId: number,
-                 @Body() dto: ReviewUpdateDto) {
-    await this.reviewsService.update(id, bookId, dto);
-  }
-
-  @ApiOperation({ summary: 'delete review' })
-  @Roles(Role.Reader)
-  @Delete('my/books/:id')
-  async deleteMy(@TokenPayload('id') id: number,
-                 @Param('id', ParseIntPipe) bookId: number) {
-    await this.reviewsService.delete(id, id, bookId);
-  }
-
-  @ApiOperation({ summary: 'get review (public)' })
-  @Public()
-  @Get(':userId-:bookId')
-  async get(@Param('userId', ParseIntPipe) userId: number,
-            @Param('bookId', ParseIntPipe) bookId: number) {
-    await this.reviewsService.get(userId, bookId);
-  }
-
-  @ApiOperation({ summary: 'delete review (admin)' })
-  @Roles(Role.Admin)
-  @Delete(':userId-:bookId')
-  async deleteUserReview(@TokenPayload() payload: TokenPayloadT,
-                         @Param('userId', ParseIntPipe) userId: number,
-                         @Param('bookId', ParseIntPipe) bookId: number) {
-    await this.reviewsService.delete(payload.id, userId, bookId, payload.admin);
   }
 }

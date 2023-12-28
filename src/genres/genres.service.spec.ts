@@ -67,7 +67,7 @@ describe('GenreService', () => {
   });
 
   describe('create', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.create(mockGenre)).resolves.toStrictEqual(mockGenre);
     });
 
@@ -79,7 +79,7 @@ describe('GenreService', () => {
   });
 
   describe('get', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.get(mockGenre.name)).resolves.toStrictEqual(mockGenre);
     });
 
@@ -91,11 +91,11 @@ describe('GenreService', () => {
   });
 
   describe('getMany', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.getMany(['Fantasy', 'Romance'])).resolves.toEqual([{ name: 'Fantasy' }, { name: 'Romance' }]);
     });
 
-    it('normal - all', async () => {
+    it('success - all', async () => {
       await expect(service.getMany()).resolves.toEqual(mockGenres);
     });
 
@@ -109,7 +109,7 @@ describe('GenreService', () => {
   });
 
   describe('update', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.update(mockGenre.name, '')).resolves.toBeUndefined();
     });
 
@@ -121,7 +121,7 @@ describe('GenreService', () => {
   });
 
   describe('delete', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.delete(mockGenre.name)).resolves.toBeUndefined();
     });
 
@@ -133,7 +133,7 @@ describe('GenreService', () => {
   });
 
   describe('getGenreBooks', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.getGenreBooks(mockGenre.name, {})).resolves.toBeInstanceOf(Array);
     });
 

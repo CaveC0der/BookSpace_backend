@@ -29,6 +29,7 @@ export class GenresService {
     return genre;
   }
 
+  // returns all if names is undefined
   async getMany(names?: string[]) {
     return this.genreRepo.findAll({ where: names && { name: { [Op.in]: names } } });
   }

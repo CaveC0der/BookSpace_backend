@@ -2,7 +2,7 @@ import { Length, Min } from 'class-validator';
 import { CommentCreationT } from '../types/comment-creation.type';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class CommentCreationDto implements CommentCreationT {
+export default class CommentCreationDto implements Omit<CommentCreationT, 'userId'> {
   @ApiProperty({ minimum: 1 })
   @Min(1)
   bookId: number;

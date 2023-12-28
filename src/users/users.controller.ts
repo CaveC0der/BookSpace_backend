@@ -27,10 +27,9 @@ import RolesGuard from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { Role } from '../roles/role.enum';
 import { TokenPayload } from '../tokens/decorators/token-payload.decorator';
-import { TokenPayloadT } from '../tokens/types/token-payload.type';
 import RoleDto from '../roles/dtos/role.dto';
 
-@ApiTags('user')
+@ApiTags('users')
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })
@@ -39,7 +38,7 @@ import RoleDto from '../roles/dtos/role.dto';
 @UseGuards(AuthGuard, RolesGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @SerializeOptions({ strategy: 'excludeAll' })
-@Controller('user')
+@Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -99,11 +98,10 @@ export class UsersController {
     await this.usersService.restore(id);
   }
 
-  @ApiOperation({ summary: 'delete avatar (admin)' })
+  @ApiOperation({ summary: 'delete user avatar (admin)' })
   @Roles(Role.Admin)
   @Delete(':id/avatar')
-  async deleteUserAvatar(@TokenPayload() payload: TokenPayloadT,
-                         @Param('id', ParseIntPipe) id: number) {
+  async deleteUserAvatar(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.deleteAvatar(id);
   }
 

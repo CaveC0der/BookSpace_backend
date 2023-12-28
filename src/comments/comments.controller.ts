@@ -27,7 +27,7 @@ import { Role } from '../roles/role.enum';
 import { TokenPayload } from '../tokens/decorators/token-payload.decorator';
 import { TokenPayloadT } from '../tokens/types/token-payload.type';
 
-@ApiTags('comment')
+@ApiTags('comments')
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })
@@ -81,14 +81,5 @@ export class CommentsController {
   async getBookComments(@Param('id', ParseIntPipe) bookId: number,
                         @Query() dto: CommentsQueryDto) {
     return this.commentsService.find({ bookId }, dto);
-  }
-
-  @ApiOperation({ summary: 'get user comments' })
-  @ApiResponse({ status: 200, type: [CommentModel] })
-  @Roles(Role.Reader)
-  @Get('users/:id')
-  async getUserComments(@Param('id', ParseIntPipe) userId: number,
-                        @Query() dto: CommentsQueryDto) {
-    return this.commentsService.find({ userId }, dto);
   }
 }

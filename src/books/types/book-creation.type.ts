@@ -1,6 +1,5 @@
 export type BookCreationT = {
   name: string
-  authorId?: number
-  cover?: string
+  authorId: number
   synopsis?: string
 }

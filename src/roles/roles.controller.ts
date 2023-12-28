@@ -2,11 +2,9 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Delete,
   Get,
   Param,
   ParseEnumPipe,
-  Post,
   Put,
   Query,
   SerializeOptions,
@@ -14,7 +12,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
-import RoleCreationDto from './dtos/role-creation.dto';
 import { Roles } from './roles.decorator';
 import { Role } from './role.enum';
 import AuthGuard from '../auth/guards/auth.guard';
@@ -26,7 +23,7 @@ import RoleUpdateDto from './dtos/role-update.dto';
 import UserModel from '../users/user.model';
 import UsersQueryDto from '../users/dtos/users-query.dto';
 
-@ApiTags('role')
+@ApiTags('roles')
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })
@@ -35,17 +32,9 @@ import UsersQueryDto from '../users/dtos/users-query.dto';
 @UseGuards(AuthGuard, RolesGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @SerializeOptions({ strategy: 'excludeAll' })
-@Controller('role')
+@Controller('roles')
 export class RolesController {
   constructor(private rolesService: RolesService) {}
-
-  @ApiOperation({ summary: 'create role (admin)' })
-  @ApiResponse({ status: 201, type: RoleModel })
-  @Roles(Role.Admin)
-  @Post()
-  async create(@Body() dto: RoleCreationDto) {
-    return this.rolesService.create(dto);
-  }
 
   @ApiOperation({ summary: 'get roles (public)' })
   @ApiResponse({ status: 200, type: [RoleModel] })
@@ -57,7 +46,7 @@ export class RolesController {
 
   @ApiOperation({ summary: 'get role' })
   @ApiResponse({ status: 200, type: RoleModel })
-  @Roles(Role.Reader)
+  @Public()
   @Get(':id')
   async get(@Param('id', new ParseEnumPipe(Role)) name: Role) {
     return this.rolesService.get(name);
@@ -71,16 +60,9 @@ export class RolesController {
     await this.rolesService.update(name, dto.description);
   }
 
-  @ApiOperation({ summary: 'delete role (admin)' })
-  @Roles(Role.Admin)
-  @Delete(':id')
-  async delete(@Param('id', new ParseEnumPipe(Role)) name: Role) {
-    await this.rolesService.delete(name);
-  }
-
   @ApiOperation({ summary: 'get role users' })
   @ApiResponse({ status: 200, type: [UserModel] })
-  @Roles(Role.Reader)
+  @Public()
   @Get(':id/users')
   async findRoleUsers(@Param('id', new ParseEnumPipe(Role)) name: Role,
                       @Query() dto: UsersQueryDto) {

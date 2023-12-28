@@ -2,7 +2,7 @@ import { ReviewCreationT } from '../types/review-creation.type';
 import { IsOptional, Length, Max, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export default class ReviewCreationDto implements ReviewCreationT {
+export default class ReviewCreationDto implements Omit<ReviewCreationT, 'userId'> {
   @ApiProperty({ minimum: 1 })
   @Min(1)
   bookId: number;

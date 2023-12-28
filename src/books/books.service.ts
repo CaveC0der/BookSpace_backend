@@ -1,7 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './models/book.model';
-import { BookCreationT } from './types/book-creation.type';
 import { literal, Op, ValidationError } from 'sequelize';
 import { ViewModel } from './models/view.model';
 import BookUpdateDto from './dtos/book-update.dto';
@@ -14,6 +13,7 @@ import { FilesService } from '../files/files.service';
 import { GenresService } from '../genres/genres.service';
 import UserModel from '../users/user.model';
 import GenreModel from '../genres/models/genre.model';
+import BookCreationDto from './dtos/book-creation.dto';
 
 @Injectable()
 export class BooksService {
@@ -26,9 +26,12 @@ export class BooksService {
               private filesService: FilesService,
               private genresService: GenresService) {}
 
-  async create(authorId: number, dto: BookCreationT) {
+  async create(authorId: number, dto: BookCreationDto) {
     try {
-      return await this.bookRepo.create({ ...dto, authorId });
+      const book = await this.bookRepo.create({ name: dto.name, authorId, synopsis: dto.synopsis });
+      if (dto.genres)
+        await book.$set('genres', await this.genresService.getMany(dto.genres));
+      return book;
     } catch (error) {
       if (error instanceof ValidationError)
         error = error.errors.map(err => err.message);
@@ -62,7 +65,9 @@ export class BooksService {
       throw new ForbiddenException();
 
     try {
-      await book.update(dto);
+      await book.update({ name: dto.name, synopsis: dto.synopsis });
+      if (dto.genres)
+        await book.$set('genres', await this.genresService.getMany(dto.genres));
     } catch (error) {
       if (error instanceof ValidationError)
         error = error.errors.map(err => err.message);
@@ -143,7 +148,7 @@ export class BooksService {
     await book.$add('genres', await this.genresService.getMany(names));
   }
 
-  async excludeGenres(userId: number, bookId: number, names: string[], force?: boolean) {
+  async removeGenres(userId: number, bookId: number, names: string[], force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId, { include: GenreModel });
     if (!book)
       throw new NotFoundException();

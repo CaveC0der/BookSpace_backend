@@ -60,7 +60,7 @@ describe('ReviewsService', () => {
   });
 
   describe('create', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.create(mockUser.id, mockReview)).resolves.toStrictEqual(mockReview);
     });
 
@@ -72,7 +72,7 @@ describe('ReviewsService', () => {
   });
 
   describe('get', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.get(mockUser.id, mockReview.bookId)).resolves.toStrictEqual(mockReview);
     });
 
@@ -84,7 +84,7 @@ describe('ReviewsService', () => {
   });
 
   describe('update', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.update(mockUser.id, mockReview.bookId, { rate: 4 })).resolves.toBeUndefined();
     });
 
@@ -96,7 +96,7 @@ describe('ReviewsService', () => {
   });
 
   describe('delete', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.delete(mockUser.id, mockUser.id, mockReview.bookId)).resolves.toBeUndefined();
     });
 
@@ -116,7 +116,7 @@ describe('ReviewsService', () => {
   });
 
   describe('find', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.find({}, {})).resolves.toBeInstanceOf(Array);
     });
 

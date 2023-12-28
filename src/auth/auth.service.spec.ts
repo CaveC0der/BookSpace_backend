@@ -72,7 +72,7 @@ describe('AuthService', () => {
   });
 
   describe('signup', () => {
-    it('normal', async () => {
+    it('success', async () => {
       mockUserService.getByEmail.mockImplementationOnce(() => null);
 
       await expect(service.signup(mockSignupDto)).resolves.toStrictEqual({
@@ -87,7 +87,7 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.login(mockSignupDto)).resolves.toStrictEqual({
         dto: new LoginResponseDto({ id: 1, roles: ['Reader'] }, mockUser.username, '1-access-token'),
         refreshToken: '1-refresh-token',
@@ -118,7 +118,7 @@ describe('AuthService', () => {
   });
 
   describe('refresh', () => {
-    it('normal', async () => {
+    it('success', async () => {
       mockUser.token = { value: '1-refresh-token', update: jest.fn() };
 
       await expect(service.refresh(mockUser.id, '1-refresh-token')).resolves.toStrictEqual({
@@ -148,7 +148,7 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.logout(mockUser.id)).resolves.toBeUndefined();
     });
   });
