@@ -1,5 +1,4 @@
 import {
-  AfterCreate,
   BelongsToMany,
   Column,
   CreatedAt,
@@ -21,7 +20,6 @@ import BookModel from '../books/models/book.model';
 import { ViewModel } from '../books/models/view.model';
 import ReviewModel from '../reviews/review.model';
 import CommentModel from '../comments/comment.model';
-import { Role } from '../roles/role.enum';
 
 @Table({ tableName: 'users' })
 export default class UserModel extends Model<UserModel, UserCreationT> {
@@ -104,10 +102,5 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
   updatedAt: Date;
 
   @DeletedAt
-  deletedAt: Date;
-
-  @AfterCreate
-  static async assignDefaultRole(instance: UserModel) {
-    await instance.$add('roles', Role.Reader);
-  }
+  deletedAt: Date | null;
 }

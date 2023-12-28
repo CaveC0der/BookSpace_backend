@@ -1,20 +1,7 @@
-import {
-  AfterCreate,
-  AfterDestroy,
-  BelongsTo,
-  Column,
-  CreatedAt,
-  DataType,
-  ForeignKey,
-  Model,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import { CommentCreationT } from './types/comment-creation.type';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { Logger } from '@nestjs/common';
-import { InDecrementReturnType } from '../shared/types/indecrement.return.type';
 import UserModel from '../users/user.model';
 import BookModel from '../books/models/book.model';
 
@@ -57,24 +44,4 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
   @Expose()
   @UpdatedAt
   updatedAt: Date;
-
-  @AfterCreate
-  static async afterCreateHook(comment: CommentModel) {
-    const [[_, affected]] = await BookModel.increment('commentsCount', {
-      where: { id: comment.bookId },
-      by: 1,
-    }) as unknown as InDecrementReturnType<BookModel>;
-    if (!affected)
-      Logger.error('@AfterCreate failed', CommentModel.name);
-  }
-
-  @AfterDestroy
-  static async afterDestroyHook(comment: CommentModel) {
-    const [[_, affected]] = await BookModel.decrement('commentsCount', {
-      where: { id: comment.bookId },
-      by: 1,
-    }) as unknown as InDecrementReturnType<BookModel>;
-    if (!affected)
-      Logger.error('@AfterDestroy failed', CommentModel.name);
-  }
 }

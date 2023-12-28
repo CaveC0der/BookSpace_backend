@@ -56,7 +56,7 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
   @ApiProperty()
   @Expose()
   @ForeignKey(() => UserModel)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   authorId: number;
 
   @ApiProperty()
@@ -104,48 +104,5 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
   updatedAt: Date;
 
   @DeletedAt
-  deletedAt: Date;
-
-  @AfterCreate
-  static async updateRatingAfterCreate(book: BookModel) {
-    const author = await book.$get('author');
-    if (!author) {
-      Logger.error(`@AfterCreate failed (user not found)`, BookModel.name);
-      return;
-    }
-    const newBooksCount = author.booksCount + 1;
-    await author.update({
-      rating: ((author.rating * author.booksCount) + book.rating) / newBooksCount,
-      booksCount: newBooksCount,
-    });
-  }
-
-  @AfterUpdate
-  static async afterUpdateHook(book: BookModel) {
-    const author = await book.$get('author');
-    if (!author) {
-      Logger.error(`@AfterUpdate failed (user not found)`, BookModel.name);
-      return;
-    }
-    const previous = Number(book.previous('rating'));
-    if (isNaN(previous)) {
-      Logger.error(`@AfterUpdate failed (previous rating is undefined)`, BookModel.name);
-      return;
-    }
-    await author.update({
-      rating: ((author.rating * author.booksCount) - previous + book.rating) / author.booksCount,
-    });
-  }
-
-  @AfterDestroy
-  static async afterDestroyHook(book: BookModel) {
-    const [[_, affected]] = await UserModel.decrement('booksCount', {
-      where: { id: book.authorId },
-      by: 1,
-    }) as unknown as InDecrementReturnType<UserModel>;
-    if (!affected)
-      Logger.error('@AfterDestroy failed', BookModel.name);
-    else
-      Logger.log(`Users affected: ${affected}`, BookModel.name);
-  }
+  deletedAt: Date | null;
 }

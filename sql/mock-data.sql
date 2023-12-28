@@ -13,7 +13,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (1, 'Reader');
 INSERT INTO users_roles VALUES (1, 'Admin');
 INSERT INTO users_roles VALUES (1, 'Author');
 
@@ -32,7 +31,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (2, 'Reader');
 INSERT INTO users_roles VALUES (2, 'Author');
 
 -- Third User
@@ -50,7 +48,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (3, 'Reader');
 INSERT INTO users_roles VALUES (3, 'Author');
 
 -- Fourth User
@@ -68,7 +65,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (4, 'Reader');
 INSERT INTO users_roles VALUES (4, 'Author');
 
 -- Fifth User
@@ -86,7 +82,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (5, 'Reader');
 INSERT INTO users_roles VALUES (5, 'Author');
 
 -- Sixth User
@@ -104,9 +99,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (6, 'Reader');
-INSERT INTO users_roles VALUES (6, 'Author');
-
 -- Seventh User
 INSERT INTO users (
   username,
@@ -121,9 +113,6 @@ INSERT INTO users (
   NOW(),
   NOW()
 );
-
-INSERT INTO users_roles VALUES (7, 'Reader');
-INSERT INTO users_roles VALUES (7, 'Author');
 
 -- Eighth User
 INSERT INTO users (
@@ -140,9 +129,6 @@ INSERT INTO users (
   NOW()
 );
 
-INSERT INTO users_roles VALUES (8, 'Reader');
-INSERT INTO users_roles VALUES (8, 'Author');
-
 -- Ninth User
 INSERT INTO users (
   username,
@@ -157,9 +143,6 @@ INSERT INTO users (
   NOW(),
   NOW()
 );
-
-INSERT INTO users_roles VALUES (9, 'Reader');
-INSERT INTO users_roles VALUES (9, 'Author');
 
 -- First Book
 INSERT INTO books (

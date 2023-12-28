@@ -28,18 +28,4 @@ export class ViewModel extends Model<ViewModel, ViewCreationT> {
 
   @UpdatedAt
   updatedAt: Date;
-
-  @AfterCreate
-  static async afterCreateHook(view: ViewModel) {
-    const [[_u, usersAffected]] = await UserModel.increment('viewsCount', {
-      where: { id: view.userId },
-      by: 1,
-    }) as unknown as InDecrementReturnType<UserModel>;
-    const [[_b, booksAffected]] = await BookModel.increment('viewsCount', {
-      where: { id: view.bookId },
-      by: 1,
-    }) as unknown as InDecrementReturnType<BookModel>;
-    if (!usersAffected || !booksAffected)
-      Logger.error('@AfterCreate failed', ViewModel.name);
-  }
 }
