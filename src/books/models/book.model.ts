@@ -1,7 +1,4 @@
 import {
-  AfterCreate,
-  AfterDestroy,
-  AfterUpdate,
   BelongsTo,
   BelongsToMany,
   Column,
@@ -16,15 +13,14 @@ import {
 } from 'sequelize-typescript';
 import { ViewModel } from './view.model';
 import { BookCreationT } from '../types/book-creation.type';
-import { Logger } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { InDecrementReturnType } from '../../shared/types/indecrement.return.type';
 import UserModel from '../../users/user.model';
 import GenreModel from '../../genres/models/genre.model';
 import { BookGenreModel } from '../../genres/models/book-genre.model';
 import ReviewModel from '../../reviews/review.model';
 import CommentModel from '../../comments/comment.model';
+import { Cons } from '../book.constraint';
 
 @Table({ tableName: 'books' })
 export default class BookModel extends Model<BookModel, BookCreationT> {
@@ -35,17 +31,17 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
 
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.STRING(150), unique: true, allowNull: false })
+  @Column({ type: DataType.STRING(Cons.name.max), unique: true, allowNull: false })
   name: string;
 
   @ApiProperty({ type: String, nullable: true })
   @Expose()
-  @Column({ type: DataType.STRING(48) })
+  @Column({ type: DataType.STRING(Cons.filename) })
   cover: string | null;
 
   @ApiProperty({ type: String, nullable: true })
   @Expose()
-  @Column({ type: DataType.STRING(500) })
+  @Column({ type: DataType.STRING(Cons.synopsis) })
   synopsis: string | null;
 
   @ApiProperty()

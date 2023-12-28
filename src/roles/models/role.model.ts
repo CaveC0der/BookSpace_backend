@@ -4,17 +4,18 @@ import { UserRoleModel } from './user-role.model';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import UserModel from '../../users/user.model';
+import { Cons } from '../role.constraint';
 
 @Table({ tableName: 'roles', updatedAt: false })
 export default class RoleModel extends Model<RoleModel, RoleCreationT> {
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.STRING(32), primaryKey: true })
+  @Column({ type: DataType.STRING(Cons.name.max), primaryKey: true })
   name: string;
 
   @ApiProperty({ type: String, nullable: true })
   @Expose()
-  @Column({ type: DataType.STRING(150) })
+  @Column({ type: DataType.STRING(Cons.description) })
   description: string | null;
 
   @BelongsToMany(() => UserModel, () => UserRoleModel)

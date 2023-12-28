@@ -20,6 +20,7 @@ import BookModel from '../books/models/book.model';
 import { ViewModel } from '../books/models/view.model';
 import ReviewModel from '../reviews/review.model';
 import CommentModel from '../comments/comment.model';
+import { Cons } from './user.constraint';
 
 @Table({ tableName: 'users' })
 export default class UserModel extends Model<UserModel, UserCreationT> {
@@ -30,7 +31,7 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
 
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.STRING(64), allowNull: false })
+  @Column({ type: DataType.STRING(Cons.username.max), allowNull: false })
   username: string;
 
   @ApiProperty()
@@ -38,17 +39,17 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   email: string;
 
-  @Column({ type: DataType.STRING(64), allowNull: false })
+  @Column({ type: DataType.STRING(Cons.password.max), allowNull: false })
   password: string;
 
   @ApiProperty({ type: String, nullable: true })
   @Expose()
-  @Column({ type: DataType.STRING(48) })
+  @Column({ type: DataType.STRING(Cons.filename) })
   avatar: string | null;
 
   @ApiProperty({ type: String, nullable: true })
   @Expose()
-  @Column({ type: DataType.STRING(500) })
+  @Column({ type: DataType.STRING(Cons.bio) })
   bio: string | null;
 
   @ApiProperty()

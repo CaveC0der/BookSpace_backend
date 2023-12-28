@@ -2,8 +2,7 @@ import { RolesService } from './roles.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/sequelize';
 import RoleModel from './models/role.model';
-import { ValidationError, ValidationErrorItem } from 'sequelize';
-import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { Role } from './role.enum';
 import UsersQueryDto from '../users/dtos/users-query.dto';
 

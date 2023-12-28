@@ -1,6 +1,7 @@
 import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import GenreModel from './genre.model';
 import BookModel from '../../books/models/book.model';
+import { Cons } from '../genre.constraint';
 
 @Table({ tableName: 'books_genres', timestamps: false })
 export class BookGenreModel extends Model {
@@ -9,6 +10,6 @@ export class BookGenreModel extends Model {
   bookId: number;
 
   @ForeignKey(() => GenreModel)
-  @Column({ type: DataType.STRING(48), primaryKey: true })
+  @Column({ type: DataType.STRING(Cons.name.max), primaryKey: true })
   genre: string;
 }

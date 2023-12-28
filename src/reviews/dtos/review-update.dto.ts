@@ -1,16 +1,17 @@
 import { IsOptional, Length, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ReviewUpdateT } from '../types/review-update.type';
+import { Cons } from '../review.constraint';
 
 export default class ReviewUpdateDto implements ReviewUpdateT {
-  @ApiPropertyOptional({ minimum: 1, maximum: 5 })
+  @ApiPropertyOptional({ minimum: Cons.rate.min, maximum: Cons.rate.max })
   @IsOptional()
-  @Min(1)
-  @Max(5)
+  @Min(Cons.rate.min)
+  @Max(Cons.rate.max)
   rate?: number;
 
-  @ApiPropertyOptional({ minLength: 1, maxLength: 2000, example: 'Nice...' })
+  @ApiPropertyOptional({ minLength: 1, maxLength: Cons.text, example: 'Nice...' })
   @IsOptional()
-  @Length(1, 2000)
+  @Length(1, Cons.text)
   text?: string;
 }

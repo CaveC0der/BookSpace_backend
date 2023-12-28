@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import UserModel from '../users/user.model';
 import BookModel from '../books/models/book.model';
+import { Cons } from './comment.constraint';
 
 @Table({ tableName: 'comments' })
 export default class CommentModel extends Model<CommentModel, CommentCreationT> {
@@ -14,7 +15,7 @@ export default class CommentModel extends Model<CommentModel, CommentCreationT> 
 
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.STRING(1000), allowNull: false, defaultValue: '' })
+  @Column({ type: DataType.STRING(Cons.text), allowNull: false, defaultValue: '' })
   text: string;
 
   @ApiProperty()

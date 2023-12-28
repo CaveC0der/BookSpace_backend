@@ -1,8 +1,6 @@
 import { DataTypes } from 'sequelize';
-import { AfterCreate, BelongsTo, Column, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import BookModel from './book.model';
-import { Logger } from '@nestjs/common';
-import { InDecrementReturnType } from '../../shared/types/indecrement.return.type';
 import UserModel from '../../users/user.model';
 
 export type ViewCreationT = {

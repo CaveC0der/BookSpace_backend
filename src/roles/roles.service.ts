@@ -1,8 +1,6 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import RoleModel from './models/role.model';
-import { RoleCreationT } from './types/role-creation.type';
-import { ValidationError } from 'sequelize';
 import { Role } from './role.enum';
 import extractOrder from '../shared/utils/extract-order';
 import toBoolean from '../shared/utils/toBoolean';
