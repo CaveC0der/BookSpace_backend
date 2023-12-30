@@ -36,7 +36,7 @@ import GenresDto from '../genres/dtos/genres.dto';
 @ApiBearerAuth()
 @ApiResponse({ status: 401, description: 'unauthorized' })
 @ApiResponse({ status: 403, description: 'forbidden' })
-@ApiResponse({ status: 404, description: 'user not found' })
+@ApiResponse({ status: 404, description: 'not found' })
 @ApiResponse({ status: 400, description: 'invalid data provided' })
 @UseGuards(AuthGuard, RolesGuard)
 @UseInterceptors(ClassSerializerInterceptor)

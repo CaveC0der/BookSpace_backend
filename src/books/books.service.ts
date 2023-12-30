@@ -29,141 +29,140 @@ export class BooksService {
   async create(authorId: number, dto: BookCreationDto) {
     try {
       const book = await this.bookRepo.create({ name: dto.name, authorId, synopsis: dto.synopsis });
-      if (dto.genres)
+      if (dto.genres) {
         await book.$set('genres', await this.genresService.getMany(dto.genres));
+      }
       return book;
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async get(bookId: number, userId?: number) {
-    if (userId) {
-      const view = await this.viewRepo.findOne({ where: { userId, bookId } });
-      if (view) {
-        view.changed('updatedAt', true);
-        await view.save();
-      } else
-        await this.viewRepo.create({ userId, bookId });
+    const book = await this.bookRepo.findByPk(bookId, { include: [{ model: UserModel, as: 'author' }, GenreModel] });
+    if (!book) {
+      throw new NotFoundException();
     }
 
-    const book = await this.bookRepo.findByPk(bookId, { include: [UserModel, GenreModel] });
-    if (!book)
-      throw new NotFoundException();
+    if (userId && userId !== book.authorId) {
+      await this.viewRepo.upsert({ userId, bookId });
+    }
 
     return book;
   }
 
   async update(userId: number, bookId: number, dto: BookUpdateDto, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-    if (!book)
-      throw new NotFoundException();
+    if (!book) {throw new NotFoundException();}
 
-    if (book.authorId !== userId && !force)
-      throw new ForbiddenException();
+    if (book.authorId !== userId && !force) {throw new ForbiddenException();}
 
     try {
       await book.update({ name: dto.name, synopsis: dto.synopsis });
-      if (dto.genres)
-        await book.$set('genres', await this.genresService.getMany(dto.genres));
+      if (dto.genres) {await book.$set('genres', await this.genresService.getMany(dto.genres));}
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async delete(userId: number, bookId: number, hard?: boolean, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-    if (!book)
+    if (!book) {
       throw new NotFoundException();
-
-    if (book.authorId !== userId && !force)
+    }
+    if (book.authorId !== userId && !force) {
       throw new ForbiddenException();
-
+    }
     await book.destroy({ force: hard });
   }
 
   async restore(userId: number, bookId: number, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId, { paranoid: false });
-    if (!book)
+    if (!book) {
       throw new NotFoundException();
-
-    if (book.authorId !== userId && !force)
+    }
+    if (book.authorId !== userId && !force) {
       throw new ForbiddenException();
-
+    }
     await book.restore();
   }
 
   async setCover(userId: number, bookId: number, file: Express.Multer.File) {
     const book = await this.bookRepo.findByPk(bookId);
-    if (!book)
+    if (!book) {
       throw new NotFoundException();
+    }
 
-    if (book.authorId !== userId)
+    if (book.authorId !== userId) {
       throw new ForbiddenException();
+    }
 
-    if (book.cover)
+    if (book.cover) {
       await this.filesService.delete(book.cover);
+    }
 
     try {
       await book.update({ cover: await this.filesService.save(file) });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async deleteCover(userId: number, bookId: number, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-    if (!book)
+    if (!book) {
       throw new NotFoundException();
+    }
 
-    if (userId !== book.authorId && !force)
+    if (userId !== book.authorId && !force) {
       throw new ForbiddenException();
+    }
 
-    if (book.cover)
+    if (book.cover) {
       await this.filesService.delete(book.cover);
+    }
 
     try {
       await book.update({ cover: null });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async addGenres(userId: number, bookId: number, names: string[], force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId, { include: GenreModel });
-    if (!book)
+    if (!book) {
       throw new NotFoundException();
-
-    if (userId !== book.authorId && !force)
+    }
+    if (userId !== book.authorId && !force) {
       throw new ForbiddenException();
-
+    }
     await book.$add('genres', await this.genresService.getMany(names));
   }
 
   async removeGenres(userId: number, bookId: number, names: string[], force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId, { include: GenreModel });
-    if (!book)
+    if (!book) {
       throw new NotFoundException();
-
-    if (userId !== book.authorId && !force)
+    }
+    if (userId !== book.authorId && !force) {
       throw new ForbiddenException();
-
+    }
     await book.$remove('genres', await this.genresService.getMany(names));
   }
 
   async find(where: WhereOptions<BookModel>, dto: FindBooksQueryDto) {
-    if (dto.query)
-      where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query, ...where } };
+    if (dto.query) {where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query, ...where } };}
 
-    if (dto.genres)
+    if (dto.genres) {
       where = {
         id: {
           [Op.in]: (await this.bookGenreRepo.findAll({
@@ -174,6 +173,7 @@ export class BooksService {
           })).map(bg => bg.bookId),
         }, ...where,
       };
+    }
 
     return this.bookRepo.findAll({
       where,

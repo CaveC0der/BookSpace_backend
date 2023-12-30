@@ -64,8 +64,14 @@ describe('ReviewsService', () => {
       await expect(service.create(mockUser.id, mockReview)).resolves.toStrictEqual(mockReview);
     });
 
-    it('validation error', async () => {
+    it('create failed (validation)', async () => {
       mockReviewRepo.create.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.create(mockUser.id, mockReview)).rejects.toThrow(BadRequestException);
+    });
+
+    it('create failed', async () => {
+      mockReviewRepo.create.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.create(mockUser.id, mockReview)).rejects.toThrow(BadRequestException);
     });

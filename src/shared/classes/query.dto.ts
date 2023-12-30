@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBooleanString, IsIn, IsOptional, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderDirections } from '../constants/order-directions';
+
+const OrderDirections = ['ASC', 'DESC'] as const;
 
 const orderBy: string[] = [];
 
@@ -20,7 +21,7 @@ export default class QueryDto {
   @ApiPropertyOptional({ enum: OrderDirections })
   @IsOptional()
   @IsIn(OrderDirections)
-  orderDirection?: string;
+  orderDirection?: typeof OrderDirections[number];
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -9,6 +9,7 @@ import { ConfigService } from '../config/config.service';
 import { FilesService } from '../files/files.service';
 import { Role } from '../roles/role.enum';
 import RoleModel from '../roles/models/role.model';
+import { FindAttributeOptions } from 'sequelize/types/model';
 
 @Injectable()
 export class UsersService {
@@ -21,47 +22,54 @@ export class UsersService {
     try {
       return await this.userRepo.create(dto);
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
-  async safeGetById(id: number, include?: Includeable[]) {
-    const user = await this.getById(id, include);
-    if (!user)
+  async safeGetById(id: number, include?: Includeable[], attributes?: FindAttributeOptions) {
+    const user = await this.getById(id, include, attributes);
+    if (!user) {
       throw new NotFoundException();
+    }
     return user;
   }
 
-  async safeGetByEmail(email: string, include?: Includeable[]) {
-    const user = await this.getByEmail(email, include);
-    if (!user)
+  async safeGetByEmail(email: string, include?: Includeable[], attributes?: FindAttributeOptions) {
+    const user = await this.getByEmail(email, include, attributes);
+    if (!user) {
       throw new NotFoundException();
+    }
     return user;
   }
 
-  async getById(id: number, include?: Includeable[]) {
-    return this.userRepo.findByPk(id, { include });
+  async getById(id: number, include?: Includeable[], attributes?: FindAttributeOptions) {
+    return this.userRepo.findByPk(id, { include, attributes });
   }
 
-  async getByEmail(email: string, include?: Includeable[]) {
-    return this.userRepo.findOne({ where: { email }, include });
+  async getByEmail(email: string, include?: Includeable[], attributes?: FindAttributeOptions) {
+    return this.userRepo.findOne({ where: { email }, include, attributes });
+  }
+
+  async getCreateGet(dto: UserCreationT) {
+    return this.userRepo.findCreateFind({ where: { email: dto.email }, defaults: dto });
   }
 
   async update(id: number, dto: UserUpdateDto) {
     dto.password &&= await bcryptjs.hash(dto.password, this.config.SALT_LENGTH);
 
     const user = await this.userRepo.findByPk(id);
-    if (!user)
+    if (!user) {
       throw new NotFoundException();
+    }
 
     try {
       await user.update({ username: dto.username, email: dto.email, password: dto.password, bio: dto.bio });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
@@ -75,59 +83,63 @@ export class UsersService {
 
   async restore(id: number) {
     const user = await this.userRepo.findByPk(id, { paranoid: false });
-    if (!user)
+    if (!user) {
       throw new NotFoundException();
-
+    }
     await user.restore();
   }
 
   async setAvatar(id: number, file: Express.Multer.File) {
     const user = await this.userRepo.findByPk(id);
-    if (!user)
+    if (!user) {
       throw new NotFoundException();
+    }
 
-    if (user.avatar)
+    if (user.avatar) {
       await this.filesService.delete(user.avatar);
+    }
 
     try {
       await user.update({ avatar: await this.filesService.save(file) });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async deleteAvatar(id: number) {
     const user = await this.userRepo.findByPk(id);
-    if (!user)
+    if (!user) {
       throw new NotFoundException();
+    }
 
-    if (user.avatar)
+    if (user.avatar) {
       await this.filesService.delete(user.avatar);
+    }
 
     try {
       await user.update({ avatar: null });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async addRole(id: number, name: Role) {
     const user = await this.userRepo.findByPk(id, { include: RoleModel });
-    if (!user)
+    if (!user) {
       throw new NotFoundException();
-
+    }
     await user.$add('roles', name);
   }
 
   async excludeRole(id: number, name: Role) {
     const user = await this.userRepo.findByPk(id, { include: RoleModel });
-    if (!user)
+    if (!user) {
       throw new NotFoundException();
-
+    }
     await user.$remove('roles', name);
   }
 }

@@ -25,20 +25,19 @@ export class TokensService {
     return req.cookies[this.config.COOKIE_NAME];
   }
 
-  async genAccessToken(payload: TokenPayloadT) {
-    return this.jwtService.signAsync(payload, {
-      algorithm: this.config.JWT_ALGORITHM,
-      secret: this.config.JWT_ACCESS_SECRET,
-      expiresIn: this.config.JWT_ACCESS_EXPIRES_IN,
-    });
-  }
-
-  async genRefreshToken(payload: TokenPayloadT) {
-    return this.jwtService.signAsync(payload, {
-      algorithm: this.config.JWT_ALGORITHM,
-      secret: this.config.JWT_REFRESH_SECRET,
-      expiresIn: this.config.JWT_REFRESH_EXPIRES_IN,
-    });
+  async genTokens(payload: TokenPayloadT) {
+    return {
+      accessToken: await this.jwtService.signAsync(payload, {
+        algorithm: this.config.JWT_ALGORITHM,
+        secret: this.config.JWT_ACCESS_SECRET,
+        expiresIn: this.config.JWT_ACCESS_EXPIRES_IN,
+      }),
+      refreshToken: await this.jwtService.signAsync(payload, {
+        algorithm: this.config.JWT_ALGORITHM,
+        secret: this.config.JWT_REFRESH_SECRET,
+        expiresIn: this.config.JWT_REFRESH_EXPIRES_IN,
+      }),
+    };
   }
 
   async deleteRefreshToken(id: number) {

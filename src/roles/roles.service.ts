@@ -12,8 +12,9 @@ export class RolesService {
 
   async get(name: Role) {
     const role = await this.roleRepo.findByPk(name);
-    if (!role)
+    if (!role) {
       throw new NotFoundException();
+    }
     return role;
   }
 
@@ -31,8 +32,9 @@ export class RolesService {
 
   async getRoleUsers(name: Role, dto: UsersQueryDto) {
     const role = await this.roleRepo.findByPk(name);
-    if (!role)
+    if (!role) {
       throw new NotFoundException();
+    }
 
     return role.$get('users', {
       limit: dto.limit,

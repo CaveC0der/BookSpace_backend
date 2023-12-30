@@ -31,8 +31,9 @@ export class FilesService {
 
   extractFileExtension(filename: string): string {
     const extension = filename.match(/(\.\w{1,5}$)/igm)?.at(0);
-    if (!extension)
+    if (!extension) {
       throw new BadRequestException('filename has no extension');
+    }
     return extension;
   }
 }

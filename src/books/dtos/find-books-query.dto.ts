@@ -1,12 +1,12 @@
 import BooksQueryDto from './books-query.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, Length } from 'class-validator';
-import { Op } from 'sequelize';
+import { IsIn, IsOptional, Length } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Cons as BCons } from '../book.constraint';
 import { Cons as GCons } from '../../genres/genre.constraint';
 
-const modes: (keyof typeof Op)[] = ['startsWith', 'substring', 'endsWith', 'iLike'];
+// keyof typeof Op from sequelize
+const modes = ['startsWith', 'substring', 'endsWith', 'iLike'] as const;
 
 export default class FindBooksQueryDto extends BooksQueryDto {
   @ApiPropertyOptional()
@@ -16,7 +16,8 @@ export default class FindBooksQueryDto extends BooksQueryDto {
 
   @ApiPropertyOptional({ enum: modes })
   @IsOptional()
-  mode?: keyof typeof Op;
+  @IsIn(modes)
+  mode?: typeof modes[number];
 
   @ApiPropertyOptional({ example: 'Fantasy,Romance', description: 'comma-separated array' })
   @IsOptional()

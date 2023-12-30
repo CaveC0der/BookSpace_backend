@@ -21,6 +21,16 @@ export const adminSignupDto: SignupRequestT = {
   username: 'Admin-e2e',
 };
 
+export const authorLoginDto: LoginRequestT = {
+  email: 'author-e2e@mail.com',
+  password: 'author-e2e-secret',
+};
+
+export const authorSignupDto: SignupRequestT = {
+  ...authorLoginDto,
+  username: 'Author-e2e',
+};
+
 export const loginDto: LoginRequestT = {
   email: 'e2e@mail.com',
   password: 'e2e-secret',

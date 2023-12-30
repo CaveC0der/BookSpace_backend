@@ -5,5 +5,5 @@ export default class DeleteDto {
   @ApiPropertyOptional({ description: 'boolean string', example: 'false' })
   @IsOptional()
   @IsBooleanString()
-  hard?: string;
+  hard?: 'true' | 'false' | '1' | '0';
 }

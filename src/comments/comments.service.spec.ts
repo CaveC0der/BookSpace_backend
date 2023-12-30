@@ -63,8 +63,14 @@ describe('CommentsService', () => {
       await expect(service.create(mockUser.id, mockComment)).resolves.toStrictEqual(mockComment);
     });
 
-    it('validation error', async () => {
+    it('create failed (validation)', async () => {
       mockCommentRepo.create.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.create(mockUser.id, mockComment)).rejects.toThrow(BadRequestException);
+    });
+
+    it('create failed', async () => {
+      mockCommentRepo.create.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.create(mockUser.id, mockComment)).rejects.toThrow(BadRequestException);
     });
@@ -97,8 +103,14 @@ describe('CommentsService', () => {
       await expect(service.update(mockUser.id, mockComment.id, '')).rejects.toThrow(NotFoundException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockComment.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.update(mockUser.id, mockComment.id, '')).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockComment.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.update(mockUser.id, mockComment.id, '')).rejects.toThrow(BadRequestException);
     });

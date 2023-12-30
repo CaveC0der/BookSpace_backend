@@ -85,21 +85,20 @@ describe('TokensService', () => {
     });
   });
 
-  describe('genAccessToken / genRefreshToken', () => {
-    it('access', async () => {
-      await expect(service.genAccessToken(mockTokenPayload)).resolves.toBe(await mockSignAsync(0, {
-        algorithm: mockConfig.JWT_ALGORITHM,
-        secret: mockConfig.JWT_ACCESS_SECRET,
-        expiresIn: mockConfig.JWT_ACCESS_EXPIRES_IN,
-      }));
-    });
-
-    it('refresh', async () => {
-      await expect(service.genRefreshToken(mockTokenPayload)).resolves.toBe(await mockSignAsync(0, {
-        algorithm: mockConfig.JWT_ALGORITHM,
-        secret: mockConfig.JWT_REFRESH_SECRET,
-        expiresIn: mockConfig.JWT_REFRESH_EXPIRES_IN,
-      }));
+  describe('genTokens', () => {
+    it('success', async () => {
+      await expect(service.genTokens(mockTokenPayload)).resolves.toEqual({
+        accessToken: await mockSignAsync(0, {
+          algorithm: mockConfig.JWT_ALGORITHM,
+          secret: mockConfig.JWT_ACCESS_SECRET,
+          expiresIn: mockConfig.JWT_ACCESS_EXPIRES_IN,
+        }),
+        refreshToken: await mockSignAsync(0, {
+          algorithm: mockConfig.JWT_ALGORITHM,
+          secret: mockConfig.JWT_REFRESH_SECRET,
+          expiresIn: mockConfig.JWT_REFRESH_EXPIRES_IN,
+        }),
+      });
     });
   });
 

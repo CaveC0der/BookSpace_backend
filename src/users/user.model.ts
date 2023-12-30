@@ -54,7 +54,7 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
 
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.DECIMAL(5, 3), allowNull: false, defaultValue: 0 })
+  @Column({ type: DataType.FLOAT, allowNull: false, defaultValue: 0 })
   rating: number;
 
   @ApiProperty()
@@ -80,11 +80,11 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
   @BelongsToMany(() => RoleModel, () => UserRoleModel)
   roles: RoleModel[];
 
-  @HasMany(() => BookModel, { foreignKey: 'authorId' }) // authored books
+  @HasMany(() => BookModel, { as: 'authored' })
   books: BookModel[];
 
-  @HasMany(() => ViewModel) // viewed books
-  views: ViewModel[];
+  @BelongsToMany(() => BookModel, { as: 'viewed', through: () => ViewModel })
+  viewed: BookModel[];
 
   @HasMany(() => ReviewModel)
   reviews: ReviewModel[];

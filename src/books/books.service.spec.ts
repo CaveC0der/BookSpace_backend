@@ -48,14 +48,8 @@ describe('BooksService', () => {
     destroy: jest.fn().mockImplementation(() => 1),
     restore: jest.fn(),
   };
-  const mockView = {
-    changed: jest.fn(),
-    save: jest.fn(),
-  };
-  const returnMockView = jest.fn().mockImplementation(() => mockView);
   const mockViewRepo = {
-    create: returnMockView,
-    findOne: returnMockView,
+    upsert: jest.fn().mockImplementation(() => [null, null]),
   };
   const mockBookGenreRepo = {
     findAll: jest.fn().mockImplementation(() => [{ bookId: 1 }]),
@@ -132,8 +126,14 @@ describe('BooksService', () => {
       })).resolves.toStrictEqual(mockBook);
     });
 
-    it('validation error / already exists', async () => {
+    it('create failed (validation)', async () => {
       mockBookRepo.create.mockImplementationOnce(() => { throw mockValidationError;});
+
+      await expect(service.create(mockBook.authorId, { name: mockBook.name })).rejects.toThrow(BadRequestException);
+    });
+
+    it('create failed', async () => {
+      mockBookRepo.create.mockImplementationOnce(() => { throw new Error();});
 
       await expect(service.create(mockBook.authorId, { name: mockBook.name })).rejects.toThrow(BadRequestException);
     });
@@ -146,9 +146,9 @@ describe('BooksService', () => {
     });
 
     it('new view', async () => {
-      mockViewRepo.findOne.mockImplementationOnce(() => null);
-
+      await expect(service.get(mockBook.id)).resolves.toStrictEqual(mockBook);
       await expect(service.get(mockBook.id, mockBook.authorId)).resolves.toStrictEqual(mockBook);
+      await expect(service.get(mockBook.id, 2)).resolves.toStrictEqual(mockBook);
     });
 
     it('book not found', async () => {
@@ -180,8 +180,14 @@ describe('BooksService', () => {
       await expect(service.update(mockBook.authorId, mockBook.id, { name: 'New mock name' })).rejects.toThrow(NotFoundException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockBook.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.update(mockBook.authorId, mockBook.id, { name: 'New mock name' })).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockBook.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.update(mockBook.authorId, mockBook.id, { name: 'New mock name' })).rejects.toThrow(BadRequestException);
     });
@@ -254,8 +260,14 @@ describe('BooksService', () => {
       await expect(service.setCover(mockBook.authorId, mockBook.id, mockFile)).rejects.toThrow(BadRequestException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockBook.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.setCover(mockBook.authorId, mockBook.id, mockFile)).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockBook.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.setCover(mockBook.authorId, mockBook.id, mockFile)).rejects.toThrow(BadRequestException);
     });
@@ -286,8 +298,14 @@ describe('BooksService', () => {
       await expect(service.deleteCover(mockBook.authorId, mockBook.id)).rejects.toThrow(InternalServerErrorException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockBook.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.deleteCover(mockBook.authorId, mockBook.id)).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockBook.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.deleteCover(mockBook.authorId, mockBook.id)).rejects.toThrow(BadRequestException);
     });

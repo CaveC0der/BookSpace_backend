@@ -17,44 +17,47 @@ export class CommentsService {
     try {
       return await this.commentRepo.create({ ...dto, userId });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async get(id: number) {
     const comment = await this.commentRepo.findByPk(id);
-    if (!comment)
+    if (!comment) {
       throw new NotFoundException();
+    }
     return comment;
   }
 
   async update(userId: number, commentId: number, text: string) {
     const comment = await this.commentRepo.findByPk(commentId);
-    if (!comment)
+    if (!comment) {
       throw new NotFoundException();
+    }
 
-    if (userId !== comment.userId)
+    if (userId !== comment.userId) {
       throw new ForbiddenException();
+    }
 
     try {
       await comment.update({ text });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async delete(userId: number, commentId: number, force?: boolean) {
     const comment = await this.commentRepo.findByPk(commentId);
-    if (!comment)
+    if (!comment) {
       throw new NotFoundException();
-
-    if (userId !== comment.userId && !force)
+    }
+    if (userId !== comment.userId && !force) {
       throw new ForbiddenException();
-
+    }
     await comment.destroy();
   }
 

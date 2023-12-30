@@ -11,10 +11,11 @@ import { Server } from 'http';
 import {
   adminLoginDto,
   adminSignupDto,
+  authorLoginDto,
+  authorSignupDto,
   bookCreationDto,
   bookUpdateDto,
   genreCreationDto,
-  loginDto,
   signupDto,
 } from '../data';
 import * as request from 'supertest';
@@ -28,6 +29,8 @@ import { BooksService } from '../../src/books/books.service';
 import BookModel from '../../src/books/models/book.model';
 import { GenresService } from '../../src/genres/genres.service';
 import GenreModel from '../../src/genres/models/genre.model';
+import BookCreationDto from '../../src/books/dtos/book-creation.dto';
+import FindBooksQueryDto from '../../src/books/dtos/find-books-query.dto';
 
 describe('Books e2e', () => {
   let app: NestExpressApplication;
@@ -37,6 +40,7 @@ describe('Books e2e', () => {
   let usersService: UsersService;
   let genresService: GenresService;
   let booksService: BooksService;
+  let user: { model: UserModel, accessToken: string };
   let author: { model: UserModel, accessToken: string };
   let admin: { model: UserModel, accessToken: string };
   let genre: GenreModel;
@@ -66,9 +70,13 @@ describe('Books e2e', () => {
     await app.init();
 
     let { dto } = await authService.signup(signupDto);
+    user = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
+
+    dto = (await authService.signup(authorSignupDto)).dto;
     await usersService.addRole(dto.id, Role.Author);
-    dto = (await authService.login(loginDto)).dto;
+    dto = (await authService.login(authorLoginDto)).dto;
     author = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
+
     dto = (await authService.signup(adminSignupDto)).dto;
     await usersService.addRole(dto.id, Role.Admin);
     await usersService.addRole(dto.id, Role.Author);
@@ -81,6 +89,33 @@ describe('Books e2e', () => {
   });
 
   describe('(POST) /books', () => {
+    it('without token', () => request(server)
+      .post('/books')
+      .send(bookCreationDto)
+      .expect(401),
+    );
+
+    it('invalid token', () => request(server)
+      .post('/books')
+      .send(bookCreationDto)
+      .set('authorization', `Bearer ${author.accessToken.slice(0, -5)}`)
+      .expect(401),
+    );
+
+    it('not an author', () => request(server)
+      .post('/books')
+      .set('authorization', `Bearer ${user.accessToken}`)
+      .send(bookCreationDto)
+      .expect(403),
+    );
+
+    it('invalid data', () => request(server)
+      .post('/books')
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .send({ name: '' } as BookCreationDto)
+      .expect(400),
+    );
+
     it('success', () => request(server)
       .post('/books')
       .set('authorization', `Bearer ${author.accessToken}`)
@@ -92,12 +127,34 @@ describe('Books e2e', () => {
         book = body;
       }),
     );
+
+    it('book already exists', () => request(server)
+      .post('/books')
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .send(bookCreationDto)
+      .expect(400),
+    );
   });
 
   describe('(GET) /books', () => {
+    it('invalid query', () => request(server)
+      .get('/books')
+      .query({ orderBy: 'invalidOrder', mode: 'invalidMode' })
+      .expect(400),
+    );
+
+    it('none of books match query', () => request(server)
+      .get('/books')
+      .query({ query: 'DoesNotExist' } as FindBooksQueryDto)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toEqual([]);
+      }),
+    );
+
     it('success', () => request(server)
       .get('/books')
-      .query({ query: 'B', limit: 10 })
+      .query({ query: 'B', limit: 10 } as FindBooksQueryDto)
       .expect(200)
       .expect(({ body }: { body: BookModel[] }) => {
         expect(body).toBeInstanceOf(Array);
@@ -125,7 +182,7 @@ describe('Books e2e', () => {
       .expect(200)
       .expect(({ body }: { body: BookModel }) => {
         expect(body.name).toBe(bookCreationDto.name);
-        expect(body.viewsCount).toBe(book.viewsCount + 1);
+        expect(body.viewsCount).toBe(book.viewsCount);
         book = body;
       }),
     );
@@ -211,6 +268,9 @@ describe('Books e2e', () => {
 
   afterAll(async () => {
     await book.destroy({ force: true });
+
+    await user.model.token?.destroy();
+    await user.model.destroy({ force: true });
 
     await author.model.token?.destroy();
     await author.model.destroy({ force: true });

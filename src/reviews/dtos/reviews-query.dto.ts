@@ -1,12 +1,12 @@
 import { IsIn } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import ReviewModel from '../review.model';
 import QueryDto from '../../shared/classes/query.dto';
 
-const orderBy: (keyof ReviewModel)[] = ['rate', 'createdAt', 'updatedAt'];
+// (keyof ReviewModel)[]
+const orderBy = ['rate', 'createdAt', 'updatedAt'] as const;
 
 export default class ReviewsQueryDto extends QueryDto {
   @ApiPropertyOptional({ enum: orderBy })
   @IsIn(orderBy)
-  orderBy?: string;
+  orderBy?: typeof orderBy[number];
 }

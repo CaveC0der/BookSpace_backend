@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule as DefaultConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthModule } from './auth/auth.module';
@@ -41,9 +41,8 @@ import { FilesModule } from './files/files.module';
           UserModel, TokenModel, RoleModel, UserRoleModel, BookModel,
           GenreModel, BookGenreModel, ViewModel, ReviewModel, CommentModel,
         ],
-        logging: false,
-        // autoLoadModels: true,
-        // sync: { force: true },
+        logging: sql => Logger.log(sql, SequelizeModule.name),
+        // autoLoadModels: true, sync: { force: true },
       }),
     }),
     ThrottlerModule.forRootAsync({

@@ -14,8 +14,7 @@ import { Token } from '../tokens/decorators/token.decorator';
 
 @ApiTags('auth')
 @ApiResponse({ status: 401, description: 'unauthorized' })
-@ApiResponse({ status: 403, description: 'forbidden' })
-@ApiResponse({ status: 404, description: 'role not found' })
+@ApiResponse({ status: 404, description: 'not found' })
 @ApiResponse({ status: 400, description: 'invalid data provided' })
 @Controller('auth')
 export class AuthController {

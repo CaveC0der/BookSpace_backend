@@ -18,16 +18,17 @@ export class ReviewsService {
     try {
       return await this.reviewRepo.create({ ...dto, userId });
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async get(userId: number, bookId: number) {
     const review = await this.reviewRepo.findOne({ where: { userId, bookId } });
-    if (!review)
+    if (!review) {
       throw new NotFoundException();
+    }
     return review;
   }
 
@@ -43,8 +44,9 @@ export class ReviewsService {
   }
 
   async delete(initiatorId: number, userId: number, bookId: number, force?: boolean) {
-    if (initiatorId !== userId && !force)
+    if (initiatorId !== userId && !force) {
       throw new ForbiddenException();
+    }
 
     const destroyed = await this.reviewRepo.destroy({ where: { userId, bookId } });
     if (!destroyed) {

@@ -144,6 +144,30 @@ INSERT INTO users (
   NOW()
 );
 
+INSERT INTO genres (
+  name,
+  "createdAt"
+) VALUES (
+  'Fantasy',
+  NOW()
+);
+
+INSERT INTO genres (
+  name,
+  "createdAt"
+) VALUES (
+  'Romance',
+  NOW()
+);
+
+INSERT INTO genres (
+  name,
+  "createdAt"
+) VALUES (
+  'Drama',
+  NOW()
+);
+
 -- First Book
 INSERT INTO books (
   name,
@@ -156,6 +180,9 @@ INSERT INTO books (
   NOW(),
   NOW()
 );
+
+INSERT INTO books_genres ("bookId", genre) VALUES (1, 'Fantasy');
+INSERT INTO books_genres ("bookId", genre) VALUES (1, 'Romance');
 
 -- Second Book
 INSERT INTO books (

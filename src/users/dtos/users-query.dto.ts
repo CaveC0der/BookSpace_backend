@@ -1,13 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsOptional } from 'class-validator';
-import UserModel from '../user.model';
 import QueryDto from '../../shared/classes/query.dto';
 
-const orderBy: (keyof UserModel)[] = ['username', 'email', 'rating', 'booksCount', 'reviewsCount'];
+// (keyof UserModel)[]
+const orderBy = ['username', 'email', 'rating', 'booksCount', 'reviewsCount'] as const;
 
 export default class UsersQueryDto extends QueryDto {
   @ApiPropertyOptional({ enum: orderBy })
   @IsOptional()
   @IsIn(orderBy)
-  orderBy?: string;
+  orderBy?: typeof orderBy[number];
 }

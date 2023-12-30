@@ -28,6 +28,7 @@ describe('UsersService', () => {
     create: returnMockUser,
     findByPk: returnMockUser,
     findOne: returnMockUser,
+    findCreateFind: jest.fn().mockImplementation(() => [mockUser, true]),
     destroy: jest.fn().mockImplementation(() => 1),
     restore: jest.fn(),
   };
@@ -86,8 +87,18 @@ describe('UsersService', () => {
       })).resolves.toStrictEqual(mockUser);
     });
 
-    it('validation error / already exists', async () => {
+    it('create failed (validation / already exists)', async () => {
       mockUserRepo.create.mockImplementationOnce(() => { throw mockValidationError;});
+
+      await expect(service.create({
+        username: mockUser.username,
+        email: mockUser.email,
+        password: mockUser.password,
+      })).rejects.toThrow(BadRequestException);
+    });
+
+    it('create failed', async () => {
+      mockUserRepo.create.mockImplementationOnce(() => { throw new Error();});
 
       await expect(service.create({
         username: mockUser.username,
@@ -110,6 +121,16 @@ describe('UsersService', () => {
       await expect(service.safeGetById(mockUser.id)).rejects.toThrow(NotFoundException);
       await expect(service.safeGetByEmail(mockUser.email)).rejects.toThrow(NotFoundException);
     });
+
+    it('or create - created', async () => {
+      await expect(service.getCreateGet(mockUser)).resolves.toStrictEqual([mockUser, true]);
+    });
+
+    it('or create - found', async () => {
+      mockUserRepo.findCreateFind.mockImplementationOnce(() => [mockUser, false]);
+
+      await expect(service.getCreateGet(mockUser)).resolves.toStrictEqual([mockUser, false]);
+    });
   });
 
   describe('update', () => {
@@ -123,8 +144,14 @@ describe('UsersService', () => {
       await expect(service.update(mockUser.id, { password: 'new-password' })).rejects.toThrow(NotFoundException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockUser.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.update(mockUser.id, { password: 'new-password' })).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockUser.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.update(mockUser.id, { password: 'new-password' })).rejects.toThrow(BadRequestException);
     });
@@ -177,8 +204,14 @@ describe('UsersService', () => {
       await expect(service.setAvatar(mockUser.id, mockFile)).rejects.toThrow(BadRequestException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockUser.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.setAvatar(mockUser.id, mockFile)).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockUser.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.setAvatar(mockUser.id, mockFile)).rejects.toThrow(BadRequestException);
     });
@@ -201,8 +234,14 @@ describe('UsersService', () => {
       await expect(service.deleteAvatar(mockUser.id)).rejects.toThrow(InternalServerErrorException);
     });
 
-    it('update failed', async () => {
+    it('update failed (validation)', async () => {
       mockUser.update.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.deleteAvatar(mockUser.id)).rejects.toThrow(BadRequestException);
+    });
+
+    it('update failed', async () => {
+      mockUser.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.deleteAvatar(mockUser.id)).rejects.toThrow(BadRequestException);
     });

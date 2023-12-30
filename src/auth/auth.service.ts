@@ -18,15 +18,16 @@ export class AuthService {
               private tokensService: TokensService) {}
 
   async signup(dto: UserCreationT) {
-    if (await this.usersService.getByEmail(dto.email))
-      throw new BadRequestException('user already exists');
-
     dto.password = await bcryptjs.hash(dto.password, this.config.SALT_LENGTH);
-    const user = await this.usersService.create(dto);
+
+    const [user, created] = await this.usersService.getCreateGet(dto);
+    if (!created) {
+      throw new BadRequestException('user already exists');
+    }
+
     const roles = await user.$get('roles');
     const payload: TokenPayloadT = { id: user.id, roles: roles.map(role => role.name) };
-    const accessToken = await this.tokensService.genAccessToken(payload);
-    const refreshToken = await this.tokensService.genRefreshToken(payload);
+    const { accessToken, refreshToken } = await this.tokensService.genTokens(payload);
     await user.$create('token', { value: refreshToken });
 
     return { dto: new SignupResponseDto(payload, accessToken), refreshToken };
@@ -35,16 +36,17 @@ export class AuthService {
   async login(dto: LoginRequestDto) {
     const user = await this.usersService.safeGetByEmail(dto.email, [RoleModel, TokenModel]);
 
-    if (!await bcryptjs.compare(dto.password, user.password))
+    if (!await bcryptjs.compare(dto.password, user.password)) {
       throw new BadRequestException('invalid password');
+    }
 
     const payload: TokenPayloadT = { id: user.id, roles: user.roles.map(role => role.name) };
-    const accessToken = await this.tokensService.genAccessToken(payload);
-    const refreshToken = await this.tokensService.genRefreshToken(payload);
-    if (!user.token)
+    const { accessToken, refreshToken } = await this.tokensService.genTokens(payload);
+    if (!user.token) {
       await user.$create('token', { value: refreshToken });
-    else
+    } else {
       await user.token.update({ value: refreshToken });
+    }
 
     return { dto: new LoginResponseDto(payload, user.username, accessToken), refreshToken };
   }
@@ -52,12 +54,12 @@ export class AuthService {
   async refresh(id: number, token: string) {
     const user = await this.usersService.safeGetById(id, [TokenModel, RoleModel]);
 
-    if (!user.token || user.token.value !== token)
+    if (!user.token || user.token.value !== token) {
       throw new UnauthorizedException();
+    }
 
     const payload: TokenPayloadT = { id: user.id, roles: user.roles.map(role => role.name) };
-    const accessToken = await this.tokensService.genAccessToken(payload);
-    const refreshToken = await this.tokensService.genRefreshToken(payload);
+    const { accessToken, refreshToken } = await this.tokensService.genTokens(payload);
     await user.token.update({ value: refreshToken });
 
     return { dto: new LoginResponseDto(payload, user.username, accessToken), refreshToken };

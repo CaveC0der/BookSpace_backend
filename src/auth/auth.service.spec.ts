@@ -33,11 +33,14 @@ describe('AuthService', () => {
     getByEmail: returnMockUser,
     safeGetByEmail: returnMockUser,
     safeGetById: returnMockUser,
+    getCreateGet: jest.fn().mockImplementation(() => [mockUser, false]),
   };
   const mockConfig = { SALT_LENGTH: 8 };
   const mockTokenService = {
-    genAccessToken: jest.fn().mockImplementation((p: TokenPayloadT) => `${p.id}-access-token`),
-    genRefreshToken: jest.fn().mockImplementation((p: TokenPayloadT) => `${p.id}-refresh-token`),
+    genTokens: jest.fn().mockImplementation((p: TokenPayloadT) => ({
+      accessToken: `${p.id}-access-token`,
+      refreshToken: `${p.id}-refresh-token`,
+    })),
     deleteRefreshToken: jest.fn(),
   };
 
@@ -73,7 +76,7 @@ describe('AuthService', () => {
 
   describe('signup', () => {
     it('success', async () => {
-      mockUserService.getByEmail.mockImplementationOnce(() => null);
+      mockUserService.getCreateGet.mockImplementationOnce(() => [mockUser, true]);
 
       await expect(service.signup(mockSignupDto)).resolves.toStrictEqual({
         dto: new SignupResponseDto({ id: 1, roles: ['Reader'] }, '1-access-token'),

@@ -71,8 +71,14 @@ describe('GenreService', () => {
       await expect(service.create(mockGenre)).resolves.toStrictEqual(mockGenre);
     });
 
-    it('validation error / already exists', async () => {
+    it('create failed (validation)', async () => {
       mockGenreRepo.create.mockImplementationOnce(() => { throw mockValidationError; });
+
+      await expect(service.create(mockGenre)).rejects.toThrow(BadRequestException);
+    });
+
+    it('create failed', async () => {
+      mockGenreRepo.create.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.create(mockGenre)).rejects.toThrow(BadRequestException);
     });

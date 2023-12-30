@@ -16,16 +16,17 @@ export class GenresService {
     try {
       return await this.genreRepo.create(dto);
     } catch (error) {
-      if (error instanceof ValidationError)
-        error = error.errors.map(err => err.message);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error instanceof ValidationError
+        ? error.errors.map(err => err.message)
+        : error);
     }
   }
 
   async get(name: string) {
     const genre = await this.genreRepo.findByPk(name);
-    if (!genre)
+    if (!genre) {
       throw new NotFoundException();
+    }
     return genre;
   }
 
@@ -52,8 +53,9 @@ export class GenresService {
 
   async getGenreBooks(name: string, dto: BooksQueryDto) {
     const genre = await this.genreRepo.findByPk(name);
-    if (!genre)
+    if (!genre) {
       throw new NotFoundException();
+    }
 
     return genre.$get('books', {
       limit: dto.limit,

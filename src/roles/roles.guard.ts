@@ -13,14 +13,14 @@ export default class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-
-    if (!requiredRoles)
+    if (!requiredRoles) {
       return true;
+    }
 
     const payload: TokenPayloadT = context.switchToHttp().getRequest().payload;
-
-    if (!payload || !payload.roles)
+    if (!payload || !payload.roles) {
       throw new ForbiddenException();
+    }
 
     return requiredRoles.some((role) => payload.roles.includes(role));
   }

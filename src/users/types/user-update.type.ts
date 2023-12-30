@@ -1,3 +1,3 @@
 import { UserCreationT } from './user-creation.type';
 
-export type UserUpdateT = Partial<Omit<UserCreationT, 'avatar'>>
+export type UserUpdateT = Partial<UserCreationT>

@@ -9,7 +9,7 @@ export default function extractOrder(dto: { orderBy?: string, orderDirection?: s
 }
 
 export function extractBooksOrder(dto: { orderBy?: string, orderDirection?: string }): OrderItem[] | undefined {
-  if (dto.orderBy === 'popularity')
+  if (dto.orderBy === 'popularity') {
     return [[
       fn('related_popularity',
         col('BookModel.viewsCount'),
@@ -17,6 +17,7 @@ export function extractBooksOrder(dto: { orderBy?: string, orderDirection?: stri
         col('BookModel.commentsCount')),
       dto.orderDirection ?? 'ASC',
     ]];
-  else
+  } else {
     return extractOrder(dto);
+  }
 }

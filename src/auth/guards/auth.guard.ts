@@ -16,14 +16,14 @@ export default class AuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (token)
+    if (token) {
       req.payload = await this.tokensService.verifyToken(token, 'ACCESS');
-
-    if (!req.payload && !isPublic)
+    }
+    if (!req.payload && !isPublic) {
       throw new UnauthorizedException();
+    }
 
     req.accessToken = token;
-
     return true;
   }
 }

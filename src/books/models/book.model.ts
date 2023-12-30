@@ -46,7 +46,7 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
 
   @ApiProperty()
   @Expose()
-  @Column({ type: DataType.DECIMAL(5, 3), allowNull: false, defaultValue: 0 })
+  @Column({ type: DataType.FLOAT, allowNull: false, defaultValue: 0 })
   rating: number;
 
   @ApiProperty()
@@ -72,7 +72,7 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
 
   @ApiPropertyOptional({ type: () => UserModel })
   @Expose()
-  @BelongsTo(() => UserModel)
+  @BelongsTo(() => UserModel, { as: 'author' })
   author: UserModel | undefined;
 
   @ApiProperty()
@@ -80,8 +80,9 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
   @BelongsToMany(() => GenreModel, () => BookGenreModel)
   genres: GenreModel[];
 
-  @HasMany(() => ViewModel)
-  views: ViewModel[];
+  @BelongsToMany(() => UserModel, { as: 'viewers', through: () => ViewModel })
+  @Expose()
+  viewers: Array<UserModel & { ViewModel: ViewModel }>;
 
   @HasMany(() => ReviewModel)
   reviews: ReviewModel[];
