@@ -1,6 +1,8 @@
 import { col, fn, OrderItem } from 'sequelize';
+import { OrderableT } from '../types/orderable.type';
+import BooksQueryDto from '../../books/dtos/books-query.dto';
 
-export default function extractOrder(dto: { orderBy?: string, orderDirection?: string }): OrderItem[] | undefined {
+export default function extractOrder(dto: OrderableT): OrderItem[] | undefined {
   return dto.orderBy
     ? dto.orderDirection
       ? [[dto.orderBy, dto.orderDirection]]
@@ -8,7 +10,7 @@ export default function extractOrder(dto: { orderBy?: string, orderDirection?: s
     : undefined;
 }
 
-export function extractBooksOrder(dto: { orderBy?: string, orderDirection?: string }): OrderItem[] | undefined {
+export function extractBooksOrder(dto: BooksQueryDto): OrderItem[] | undefined {
   if (dto.orderBy === 'popularity') {
     return [[
       fn('related_popularity',

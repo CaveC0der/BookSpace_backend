@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import RoleModel from './models/role.model';
 import { Role } from './role.enum';
 import extractOrder from '../shared/utils/extract-order';
-import toBoolean from '../shared/utils/toBoolean';
 import UsersQueryDto from '../users/dtos/users-query.dto';
 
 @Injectable()
@@ -40,7 +39,7 @@ export class RolesService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractOrder(dto),
-      include: toBoolean(dto.eager) ? [RoleModel] : undefined,
+      include: dto.eager ? [RoleModel] : undefined,
     });
   }
 }

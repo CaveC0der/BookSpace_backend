@@ -1,442 +1,169 @@
--- First User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'First',
-  'first@mail.com',
-  '$2b$08$ZC1.w.baYLtj9CJY6/3xA.IZOs11XLcbFnZxNH4IgnErYqHAQ/fiy',
-  NOW(),
-  NOW()
-);
+INSERT INTO users
+    (username, email, password, "createdAt", "updatedAt")
+VALUES
+    ('First', 'first@mail.com', '$2b$08$ZC1.w.baYLtj9CJY6/3xA.IZOs11XLcbFnZxNH4IgnErYqHAQ/fiy', NOW(), NOW()),
+    ('Second', 'second@mail.com', '$2b$08$7x1qq.TDjqeJ1obNXVZYQOqUuspbZCYioUqwbecSWKQNwcfMRUQ72', NOW(), NOW()),
+    ('Third', 'third@mail.com', '$2b$08$Zkt5.wzypwWE.R8lt6g7gepJn6GzHGTaUEi0V8aoJKqYkFSvXwqJy', NOW(), NOW()),
+    ('Fourth', 'fourth@mail.com', '$2b$08$yJJx9iFouerDbb0hXRUgaeeg/uTr2uzoygGPneLf2Xq2ow8IHzROq', NOW(), NOW()),
+    ('Fifth', 'fifth@mail.com', '$2b$08$Qg1foRW23Z7GpJz0GpRLY.pNQ.94OMBr5nYW.enti0ppvfXFCJhfa', NOW(), NOW()),
+    ('Sixth', 'sixth@mail.com', '$2b$08$J.NLZs98LJZE38ZZsddWb.VKKEymeZOUhnPOxoWbmiHv1zVbl3tmW', NOW(), NOW()),
+    ('Seventh', 'seventh@mail.com', '$2b$08$omEWkClA3dWNt32Nq/3r2.bJ1V.vpSlE0sDzJGUAUofbf3peBQhJW', NOW(), NOW()),
+    ('Eighth', 'eighth@mail.com', '$2b$08$1ROvoa4ZCvnCVdnV/BH9yOyghvvl4GcKQ/Q8aTLTdmTJJlipMedAm', NOW(), NOW()),
+    ('Ninth', 'ninth@mail.com', '$2b$08$qtyZyFhWEeAK4hP8cMi4Qe2bj4m7cAyd2hvsS.qWhn2e1FVMQaHPG', NOW(), NOW());
 
-INSERT INTO users_roles VALUES (1, 'Admin');
-INSERT INTO users_roles VALUES (1, 'Author');
+INSERT INTO users_roles
+VALUES
+    (1, 'Admin'),
+    (1, 'Author'),
+    (2, 'Author'),
+    (3, 'Author'),
+    (4, 'Author'),
+    (5, 'Author');
 
--- Second User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Second',
-  'second@mail.com',
-  '$2b$08$7x1qq.TDjqeJ1obNXVZYQOqUuspbZCYioUqwbecSWKQNwcfMRUQ72',
-  NOW(),
-  NOW()
-);
-
-INSERT INTO users_roles VALUES (2, 'Author');
-
--- Third User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Third',
-  'third@mail.com',
-  '$2b$08$Zkt5.wzypwWE.R8lt6g7gepJn6GzHGTaUEi0V8aoJKqYkFSvXwqJy',
-  NOW(),
-  NOW()
-);
-
-INSERT INTO users_roles VALUES (3, 'Author');
-
--- Fourth User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Fourth',
-  'fourth@mail.com',
-  '$2b$08$yJJx9iFouerDbb0hXRUgaeeg/uTr2uzoygGPneLf2Xq2ow8IHzROq',
-  NOW(),
-  NOW()
-);
-
-INSERT INTO users_roles VALUES (4, 'Author');
-
--- Fifth User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Fifth',
-  'fifth@mail.com',
-  '$2b$08$Qg1foRW23Z7GpJz0GpRLY.pNQ.94OMBr5nYW.enti0ppvfXFCJhfa',
-  NOW(),
-  NOW()
-);
-
-INSERT INTO users_roles VALUES (5, 'Author');
-
--- Sixth User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Sixth',
-  'sixth@mail.com',
-  '$2b$08$J.NLZs98LJZE38ZZsddWb.VKKEymeZOUhnPOxoWbmiHv1zVbl3tmW',
-  NOW(),
-  NOW()
-);
-
--- Seventh User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Seventh',
-  'seventh@mail.com',
-  '$2b$08$omEWkClA3dWNt32Nq/3r2.bJ1V.vpSlE0sDzJGUAUofbf3peBQhJW',
-  NOW(),
-  NOW()
-);
-
--- Eighth User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Eighth',
-  'eighth@mail.com',
-  '$2b$08$1ROvoa4ZCvnCVdnV/BH9yOyghvvl4GcKQ/Q8aTLTdmTJJlipMedAm',
-  NOW(),
-  NOW()
-);
-
--- Ninth User
-INSERT INTO users (
-  username,
-  email,
-  password,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Ninth',
-  'ninth@mail.com',
-  '$2b$08$qtyZyFhWEeAK4hP8cMi4Qe2bj4m7cAyd2hvsS.qWhn2e1FVMQaHPG',
-  NOW(),
-  NOW()
-);
-
-INSERT INTO genres (
-  name,
-  "createdAt"
-) VALUES (
-  'Fantasy',
-  NOW()
-);
-
-INSERT INTO genres (
-  name,
-  "createdAt"
-) VALUES (
-  'Romance',
-  NOW()
-);
-
-INSERT INTO genres (
-  name,
-  "createdAt"
-) VALUES (
-  'Drama',
-  NOW()
-);
+INSERT INTO genres
+    (name, "createdAt")
+VALUES
+    ('Fantasy', NOW()),
+    ('Romance', NOW()),
+    ('Drama', NOW()),
+    ('Mystery', NOW()),
+    ('Thriller', NOW()),
+    ('Comedy', NOW()),
+    ('Action', NOW()),
+    ('Adventure', NOW()),
+    ('Historical', NOW()),
+    ('Horror', NOW());
 
 -- First Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'First',
-  1,
-  NOW(),
-  NOW()
-);
+INSERT INTO books
+    (name, "authorId", "createdAt", "updatedAt")
+VALUES
+    ('First', 1, NOW(), NOW()),
+    ('Second', 1, NOW(), NOW()),
+    ('Third', 1, NOW(), NOW()),
+    ('Fourth', 1, NOW(), NOW()),
+    ('Fifth', 1, NOW(), NOW()),
+    ('Sixth', 1, NOW(), NOW()),
+    ('Seventh', 1, NOW(), NOW()),
+    ('Eighth', 1, NOW(), NOW()),
+    ('Ninth', 1, NOW(), NOW()),
+    ('Mirage', 2, NOW(), NOW()),
+    ('Catalyst', 3, NOW(), NOW()),
+    ('Labyrinth', 4, NOW(), NOW()),
+    ('Pinnacle', 5, NOW(), NOW()),
+    ('Eclipse', 6, NOW(), NOW()),
+    ('Odyssey', 7, NOW(), NOW()),
+    ('Spectrum', 8, NOW(), NOW()),
+    ('Nexus', 9, NOW(), NOW()),
+    ('Ephemeral', 2, NOW(), NOW()),
+    ('Enigma', 3, NOW(), NOW()),
+    ('Serenity', 4, NOW(), NOW()),
+    ('Quasar', 5, NOW(), NOW()),
+    ('Nebula', 6, NOW(), NOW()),
+    ('Zenith', 7, NOW(), NOW()),
+    ('Ethereal', 8, NOW(), NOW()),
+    ('Vertex', 9, NOW(), NOW()),
+    ('Apogee', 2, NOW(), NOW()),
+    ('Zen', 3, NOW(), NOW()),
+    ('Infinity', 4, NOW(), NOW()),
+    ('Aurora', 5, NOW(), NOW());
 
-INSERT INTO books_genres ("bookId", genre) VALUES (1, 'Fantasy');
-INSERT INTO books_genres ("bookId", genre) VALUES (1, 'Romance');
+INSERT INTO books_genres
+    ("bookId", genre)
+VALUES
+    (1, 'Fantasy'),
+    (1, 'Romance'),
+    (2, 'Drama'),
+    (2, 'Mystery'),
+    (3, 'Thriller'),
+    (3, 'Comedy'),
+    (4, 'Action'),
+    (4, 'Adventure'),
+    (5, 'Historical'),
+    (5, 'Horror'),
+    (6, 'Fantasy'),
+    (7, 'Romance'),
+    (7, 'Drama'),
+    (8, 'Mystery'),
+    (8, 'Thriller'),
+    (9, 'Comedy'),
+    (9, 'Action'),
+    (10, 'Adventure'),
+    (10, 'Historical'),
+    (11, 'Horror'),
+    (12, 'Fantasy'),
+    (12, 'Romance'),
+    (13, 'Drama'),
+    (13, 'Mystery'),
+    (14, 'Thriller'),
+    (14, 'Comedy'),
+    (15, 'Action'),
+    (15, 'Adventure'),
+    (16, 'Historical'),
+    (16, 'Horror'),
+    (17, 'Fantasy'),
+    (18, 'Romance'),
+    (18, 'Drama'),
+    (19, 'Mystery'),
+    (19, 'Thriller'),
+    (20, 'Comedy'),
+    (20, 'Action'),
+    (21, 'Adventure'),
+    (21, 'Historical'),
+    (22, 'Horror'),
+    (23, 'Fantasy'),
+    (23, 'Romance'),
+    (24, 'Drama'),
+    (24, 'Mystery'),
+    (25, 'Thriller'),
+    (25, 'Comedy'),
+    (26, 'Action'),
+    (26, 'Adventure'),
+    (27, 'Historical'),
+    (27, 'Horror'),
+    (28, 'Fantasy'),
+    (29, 'Romance'),
+    (29, 'Drama');
 
--- Second Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Second',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Third Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Third',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Fourth Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Fourth',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Fifth Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Fifth',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Sixth Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Sixth',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Seventh Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Seventh',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Eighth Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Eighth',
-  1,
-  NOW(),
-  NOW()
-);
-
--- Ninth Book
-INSERT INTO books (
-  name,
-  "authorId",
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  'Ninth',
-  1,
-  NOW(),
-  NOW()
-);
-
--- First Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  1,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  NOW(),
-  NOW()
-);
-
--- Second Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  2,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-  NOW(),
-  NOW()
-);
-
--- Third Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  3,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-  NOW(),
-  NOW()
-);
-
--- Fourth Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  4,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-  NOW(),
-  NOW()
-);
-
--- Fifth Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  5,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-  NOW(),
-  NOW()
-);
-
--- Sixth Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  6,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  NOW(),
-  NOW()
-);
-
--- Seventh Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  7,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-  NOW(),
-  NOW()
-);
-
--- Eighth Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  8,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-  NOW(),
-  NOW()
-);
-
--- Ninth Review
-INSERT INTO reviews (
-  "userId",
-  "bookId",
-  rate,
-  text,
-  "createdAt",
-  "updatedAt"
-) VALUES (
-  9,
-  1,
-  FLOOR(random() * 5) + 1,
-  'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-  NOW(),
-  NOW()
-);
+INSERT INTO reviews
+    ("userId", "bookId", rate, text, "createdAt", "updatedAt")
+VALUES
+    (1, 2, FLOOR(random() * 5) + 1, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', NOW(), NOW()),
+    (2, 5, FLOOR(random() * 5) + 1, 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.', NOW(), NOW()),
+    (3, 8, FLOOR(random() * 5) + 1, 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Quisque feugiat massa eu metus tincidunt, vel ultrices nulla condimentum.', NOW(), NOW()),
+    (4, 11, FLOOR(random() * 5) + 1, 'Fusce a nulla nec lectus posuere facilisis vel nec purus.', NOW(), NOW()),
+    (5, 14, FLOOR(random() * 5) + 1, 'Donec aliquet consectetur sem, in tristique odio ultrices vel.', NOW(), NOW()),
+    (6, 17, FLOOR(random() * 5) + 1, 'Nullam ut mi at tellus aliquam eleifend.', NOW(), NOW()),
+    (7, 20, FLOOR(random() * 5) + 1, 'Proin fermentum dolor ut libero euismod, vel posuere odio tempor.', NOW(), NOW()),
+    (8, 23, FLOOR(random() * 5) + 1, 'Curabitur id urna eu velit commodo commodo.', NOW(), NOW()),
+    (9, 26, FLOOR(random() * 5) + 1, 'Phasellus gravida, elit at commodo congue, odio mauris fringilla quam, ut scelerisque lectus urna in leo.', NOW(), NOW()),
+    (1, 29, FLOOR(random() * 5) + 1, 'Maecenas vitae elit non odio cursus bibendum.', NOW(), NOW()),
+    (2, 3, FLOOR(random() * 5) + 1, 'Vivamus id augue ut felis congue fermentum.', NOW(), NOW()),
+    (3, 6, FLOOR(random() * 5) + 1, 'Curabitur vehicula est at est cursus, vel interdum justo tincidunt.', NOW(), NOW()),
+    (4, 9, FLOOR(random() * 5) + 1, 'Sed ac mi et ante imperdiet malesuada sit amet nec velit.', NOW(), NOW()),
+    (5, 12, FLOOR(random() * 5) + 1, 'Aliquam auctor enim id lacus tristique, id euismod justo rhoncus.', NOW(), NOW()),
+    (6, 15, FLOOR(random() * 5) + 1, 'Quisque tristique sem nec velit vulputate, vitae fermentum dui malesuada.', NOW(), NOW()),
+    (7, 18, FLOOR(random() * 5) + 1, 'Aenean euismod erat id neque bibendum, vel fringilla mauris ullamcorper.', NOW(), NOW()),
+    (8, 21, FLOOR(random() * 5) + 1, 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.', NOW(), NOW()),
+    (9, 24, FLOOR(random() * 5) + 1, 'Vivamus auctor elit eget justo aliquam, sit amet euismod turpis consequat.', NOW(), NOW()),
+    (1, 27, FLOOR(random() * 5) + 1, 'Integer accumsan urna eget justo sagittis, nec luctus tellus venenatis.', NOW(), NOW()),
+    (2, 1, FLOOR(random() * 5) + 1, 'Curabitur finibus nunc eget orci blandit, vel euismod justo lacinia.', NOW(), NOW()),
+    (3, 4, FLOOR(random() * 5) + 1, 'Cras dignissim sapien et massa fringilla tincidunt.', NOW(), NOW()),
+    (4, 7, FLOOR(random() * 5) + 1, 'Vestibulum rhoncus dolor vel neque commodo volutpat.', NOW(), NOW()),
+    (5, 10, FLOOR(random() * 5) + 1, 'In hac habitasse platea dictumst. Nunc vel eros vel tortor facilisis dapibus.', NOW(), NOW()),
+    (6, 13, FLOOR(random() * 5) + 1, 'Nullam eu ligula vel orci finibus varius a non odio.', NOW(), NOW()),
+    (7, 16, FLOOR(random() * 5) + 1, 'Nam tincidunt ex at justo malesuada, non auctor nisi volutpat.', NOW(), NOW()),
+    (8, 19, FLOOR(random() * 5) + 1, 'Sed in felis nec ex congue sodales ac eu eros.', NOW(), NOW()),
+    (9, 22, FLOOR(random() * 5) + 1, 'Morbi dignissim leo non dui auctor, a venenatis purus efficitur.', NOW(), NOW()),
+    (1, 25, FLOOR(random() * 5) + 1, 'Curabitur convallis mauris a arcu imperdiet, vel consectetur tortor fringilla.', NOW(), NOW()),
+    (2, 28, FLOOR(random() * 5) + 1, 'Suspendisse potenti. Praesent tincidunt velit nec metus mattis, eu aliquam turpis malesuada.', NOW(), NOW()),
+    (3, 2, FLOOR(random() * 5) + 1, 'Sed auctor sapien nec nisi laoreet, id ullamcorper velit eleifend.', NOW(), NOW()),
+    (4, 5, FLOOR(random() * 5) + 1, 'Aenean non dui nec elit feugiat tincidunt ut et odio.', NOW(), NOW()),
+    (5, 8, FLOOR(random() * 5) + 1, 'Pellentesque sit amet urna eu justo pellentesque pharetra.', NOW(), NOW()),
+    (6, 11, FLOOR(random() * 5) + 1, 'Suspendisse potenti. Mauris scelerisque lectus ut efficitur tristique.', NOW(), NOW()),
+    (7, 14, FLOOR(random() * 5) + 1, 'Donec sagittis urna at augue blandit, in venenatis purus feugiat.', NOW(), NOW()),
+    (8, 17, FLOOR(random() * 5) + 1, 'Vivamus auctor elit eget justo aliquam, sit amet euismod turpis consequat.', NOW(), NOW()),
+    (9, 20, FLOOR(random() * 5) + 1, 'Phasellus gravida, elit at commodo congue, odio mauris fringilla quam, ut scelerisque lectus urna in leo.', NOW(), NOW()),
+    (1, 23, FLOOR(random() * 5) + 1, 'Maecenas vitae elit non odio cursus bibendum.', NOW(), NOW()),
+    (2, 26, FLOOR(random() * 5) + 1, 'Quisque tristique sem nec velit vulputate, vitae fermentum dui malesuada.', NOW(), NOW()),
+    (3, 29, FLOOR(random() * 5) + 1, 'Nullam ut mi at tellus aliquam eleifend.', NOW(), NOW());

@@ -127,7 +127,7 @@ describe('ReviewsService', () => {
     });
 
     it('eager', async () => {
-      await service.find({}, { eager: 'true' });
+      await service.find({}, { eager: true });
 
       expect(mockReviewRepo.findAll).toHaveBeenCalledWith({
         where: {},

@@ -1,36 +1,35 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBooleanString, IsIn, IsOptional, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsOptional, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { OrderableT } from '../types/orderable.type';
+import stringToBoolean from '../utils/string-to-boolean';
 
 const OrderDirections = ['ASC', 'DESC'] as const;
 
-const orderBy: string[] = [];
-
-export default class QueryDto {
+export default abstract class QueryDto implements OrderableT {
   @ApiPropertyOptional()
-  @IsOptional()
   @Type(() => Number)
+  @IsOptional()
   @Min(1)
   limit?: number;
 
-  @ApiPropertyOptional({ enum: orderBy })
+  @ApiPropertyOptional()
+  @Type(() => Number)
   @IsOptional()
-  @IsIn(orderBy)
+  @Min(0)
+  offset?: number;
+
+  @ApiPropertyOptional({ description: 'boolean string', example: 'true' })
+  @Transform(({ value }) => stringToBoolean(value))
+  @IsOptional()
+  @IsBoolean()
+  eager?: boolean;
+
+  @IsOptional()
   orderBy?: string;
 
   @ApiPropertyOptional({ enum: OrderDirections })
   @IsOptional()
   @IsIn(OrderDirections)
   orderDirection?: typeof OrderDirections[number];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @Min(0)
-  offset?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBooleanString()
-  eager?: 'true' | 'false' | '1' | '0';
 }

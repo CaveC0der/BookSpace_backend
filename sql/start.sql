@@ -255,6 +255,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-INSERT INTO roles VALUES ('Reader', NULL, NOW());
-INSERT INTO roles VALUES ('Author', NULL, NOW());
-INSERT INTO roles VALUES ('Admin', NULL, NOW());
+INSERT INTO roles
+VALUES
+    ('Reader', NULL, NOW()),
+    ('Author', NULL, NOW()),
+    ('Admin', NULL, NOW());

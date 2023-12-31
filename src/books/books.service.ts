@@ -7,7 +7,6 @@ import BookUpdateDto from './dtos/book-update.dto';
 import { WhereOptions } from 'sequelize/types/model';
 import FindBooksQueryDto from './dtos/find-books-query.dto';
 import { extractBooksOrder } from '../shared/utils/extract-order';
-import toBoolean from '../shared/utils/toBoolean';
 import { BookGenreModel } from '../genres/models/book-genre.model';
 import { FilesService } from '../files/files.service';
 import { GenresService } from '../genres/genres.service';
@@ -77,7 +76,7 @@ export class BooksService {
     if (book.authorId !== userId && !force) {
       throw new ForbiddenException();
     }
-    await book.destroy({ force: hard });
+    await book.destroy({ force: !!hard }); // sequelize: force === false
   }
 
   async restore(userId: number, bookId: number, force?: boolean) {
@@ -159,19 +158,25 @@ export class BooksService {
     await book.$remove('genres', await this.genresService.getMany(names));
   }
 
-  async find(where: WhereOptions<BookModel>, dto: FindBooksQueryDto) {
-    if (dto.query) {where = { name: { [Op[dto.mode ?? 'startsWith']]: dto.query, ...where } };}
+  async find(dto: FindBooksQueryDto) {
+    const where: WhereOptions<BookModel> = {};
+    if (dto.name) {
+      where.name = { [Op[dto.nameMode ?? 'startsWith']]: dto.name };
+    }
+
+    const userWhere: WhereOptions<UserModel> = {};
+    if (dto.author) {
+      userWhere.username = { [Op[dto.authorMode ?? 'startsWith']]: dto.author };
+    }
 
     if (dto.genres) {
-      where = {
-        id: {
-          [Op.in]: (await this.bookGenreRepo.findAll({
-            attributes: ['bookId'],
-            where: { genre: { [Op.in]: dto.genres } },
-            group: ['bookId'],
-            having: literal(`COUNT(genre) = ${dto.genres.length}`),
-          })).map(bg => bg.bookId),
-        }, ...where,
+      where.id = {
+        [Op.in]: (await this.bookGenreRepo.findAll({
+          attributes: ['bookId'],
+          where: { genre: { [Op.in]: dto.genres } },
+          group: ['bookId'],
+          having: literal(`COUNT(genre) = ${dto.genres.length}`),
+        })).map(bg => bg.bookId),
       };
     }
 
@@ -180,7 +185,9 @@ export class BooksService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractBooksOrder(dto),
-      include: toBoolean(dto.eager) ? [UserModel, GenreModel] : GenreModel,
+      include: (dto.author || dto.eager)
+        ? [{ as: 'author', model: UserModel, attributes: ['id', 'username'], where: userWhere }, GenreModel]
+        : GenreModel,
     });
   }
 }

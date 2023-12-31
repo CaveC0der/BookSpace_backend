@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import GenreModel from './models/genre.model';
 import { GenreCreationT } from './types/genre-creation.type';
 import { extractBooksOrder } from '../shared/utils/extract-order';
-import toBoolean from '../shared/utils/toBoolean';
 import BooksQueryDto from '../books/dtos/books-query.dto';
 import UserModel from '../users/user.model';
 
@@ -61,7 +60,7 @@ export class GenresService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractBooksOrder(dto),
-      include: toBoolean(dto.eager) ? [UserModel] : undefined,
+      include: dto.eager ? [UserModel] : undefined,
     });
   }
 }

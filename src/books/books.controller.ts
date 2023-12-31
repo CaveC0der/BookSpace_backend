@@ -24,7 +24,6 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags
 import BookModel from './models/book.model';
 import FindBooksQueryDto from './dtos/find-books-query.dto';
 import DeleteDto from '../shared/classes/delete.dto';
-import toBoolean from '../shared/utils/toBoolean';
 import RolesGuard from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { Role } from '../roles/role.enum';
@@ -59,16 +58,7 @@ export class BooksController {
   @Public()
   @Get()
   async getBooks(@Query() dto: FindBooksQueryDto) {
-    return this.booksService.find({}, dto);
-  }
-
-  @ApiOperation({ summary: 'get authored books' })
-  @ApiResponse({ status: 200, type: [BookModel] })
-  @Roles(Role.Author)
-  @Get('my')
-  async getAuthoredBooks(@TokenPayload('id') authorId: number,
-                         @Query() dto: FindBooksQueryDto) {
-    return this.booksService.find({ authorId }, dto);
+    return this.booksService.find(dto);
   }
 
   @ApiOperation({ summary: 'get book (public)' })
@@ -95,7 +85,7 @@ export class BooksController {
   async delete(@TokenPayload() payload: TokenPayloadT,
                @Param('id', ParseIntPipe) bookId: number,
                @Query() dto: DeleteDto) {
-    await this.booksService.delete(payload.id, bookId, toBoolean(dto.hard), payload.admin);
+    await this.booksService.delete(payload.id, bookId, dto.hard, payload.admin);
   }
 
   @ApiOperation({ summary: 'restore book (admin)' })

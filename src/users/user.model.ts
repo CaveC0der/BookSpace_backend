@@ -81,7 +81,7 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
   roles: RoleModel[];
 
   @HasMany(() => BookModel, { as: 'authored' })
-  books: BookModel[];
+  authored: BookModel[];
 
   @BelongsToMany(() => BookModel, { as: 'viewed', through: () => ViewModel })
   viewed: BookModel[];

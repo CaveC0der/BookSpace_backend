@@ -150,7 +150,7 @@ describe('GenreService', () => {
     });
 
     it('eager', async () => {
-      const dto = { eager: 'true' } as BooksQueryDto;
+      const dto = { eager: true } as BooksQueryDto;
       await service.getGenreBooks(mockGenre.name, dto);
 
       expect(mockGenre.$get).toHaveBeenCalledWith('books', {

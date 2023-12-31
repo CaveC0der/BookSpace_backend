@@ -145,7 +145,7 @@ describe('Books e2e', () => {
 
     it('none of books match query', () => request(server)
       .get('/books')
-      .query({ query: 'DoesNotExist' } as FindBooksQueryDto)
+      .query({ name: 'DoesNotExist' } as FindBooksQueryDto)
       .expect(200)
       .expect(({ body }) => {
         expect(body).toEqual([]);
@@ -154,19 +154,7 @@ describe('Books e2e', () => {
 
     it('success', () => request(server)
       .get('/books')
-      .query({ query: 'B', limit: 10 } as FindBooksQueryDto)
-      .expect(200)
-      .expect(({ body }: { body: BookModel[] }) => {
-        expect(body).toBeInstanceOf(Array);
-        expect(body.map(b => b.name)).toContain(bookCreationDto.name);
-      }),
-    );
-  });
-
-  describe('(GET) /books/my', () => {
-    it('success', () => request(server)
-      .get('/books/my')
-      .set('authorization', `Bearer ${author.accessToken}`)
+      .query({ name: 'B', limit: 10 } as FindBooksQueryDto)
       .expect(200)
       .expect(({ body }: { body: BookModel[] }) => {
         expect(body).toBeInstanceOf(Array);
@@ -176,9 +164,18 @@ describe('Books e2e', () => {
   });
 
   describe('(GET) /books/:id', () => {
+    it('not found', () => request(server)
+      .get(`/books/${404}`)
+      .expect(404),
+    );
+
+    it('invalid path param', () => request(server)
+      .get(`/books/invalid`)
+      .expect(400)
+    );
+
     it('success', () => request(server)
       .get(`/books/${book.id}`)
-      .set('authorization', `Bearer ${author.accessToken}`)
       .expect(200)
       .expect(({ body }: { body: BookModel }) => {
         expect(body.name).toBe(bookCreationDto.name);

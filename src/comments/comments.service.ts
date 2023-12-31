@@ -5,7 +5,6 @@ import { ValidationError } from 'sequelize';
 import { WhereOptions } from 'sequelize/types/model';
 import CommentsQueryDto from './dtos/comments-query.dto';
 import extractOrder from '../shared/utils/extract-order';
-import toBoolean from '../shared/utils/toBoolean';
 import UserModel from '../users/user.model';
 import CommentCreationDto from './dtos/comment-creation.dto';
 
@@ -67,7 +66,7 @@ export class CommentsService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractOrder(dto),
-      include: toBoolean(dto.eager) ? UserModel : undefined,
+      include: dto.eager ? UserModel : undefined,
     });
   }
 }

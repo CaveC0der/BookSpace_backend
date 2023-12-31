@@ -6,7 +6,6 @@ import { ReviewUpdateT } from './types/review-update.type';
 import ReviewsQueryDto from './dtos/reviews-query.dto';
 import { WhereOptions } from 'sequelize/types/model';
 import extractOrder from '../shared/utils/extract-order';
-import toBoolean from '../shared/utils/toBoolean';
 import UserModel from '../users/user.model';
 import ReviewCreationDto from './dtos/review-creation.dto';
 
@@ -61,7 +60,7 @@ export class ReviewsService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractOrder(dto),
-      include: toBoolean(dto.eager) ? UserModel : undefined,
+      include: dto.eager ? UserModel : undefined,
     });
   }
 }

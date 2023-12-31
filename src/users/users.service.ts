@@ -10,6 +10,9 @@ import { FilesService } from '../files/files.service';
 import { Role } from '../roles/role.enum';
 import RoleModel from '../roles/models/role.model';
 import { FindAttributeOptions } from 'sequelize/types/model';
+import BooksQueryDto from '../books/dtos/books-query.dto';
+import { extractBooksOrder } from '../shared/utils/extract-order';
+import GenreModel from '../genres/models/genre.model';
 
 @Injectable()
 export class UsersService {
@@ -125,6 +128,15 @@ export class UsersService {
         ? error.errors.map(err => err.message)
         : error);
     }
+  }
+
+  async getBooks(id: number, type: 'authored' | 'viewed', dto: BooksQueryDto) {
+    return (await this.safeGetById(id, undefined, ['id'])).$get(type, {
+      limit: dto.limit,
+      offset: dto.offset,
+      order: extractBooksOrder(dto),
+      include: dto.eager ? GenreModel : undefined,
+    });
   }
 
   async addRole(id: number, name: Role) {

@@ -352,16 +352,18 @@ describe('BooksService', () => {
   });
 
   describe('find', () => {
+    let dto: FindBooksQueryDto = {};
+
     it('normal', async () => {
-      await expect(service.find({}, {})).resolves.toBeInstanceOf(Array);
+      await expect(service.find({})).resolves.toBeInstanceOf(Array);
     });
 
-    it('query - default mode', async () => {
-      const dto = { query: 'Query' };
-      await service.find({}, dto);
+    it('name - default mode', async () => {
+      dto = { name: 'Query' };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: { [Op['startsWith']]: dto.query } },
+        where: { name: { [Op['startsWith']]: dto.name } },
         include: GenreModel,
         limit: undefined,
         offset: undefined,
@@ -369,13 +371,49 @@ describe('BooksService', () => {
       });
     });
 
-    it('query - specified mode', async () => {
-      const dto = { mode: 'substring', query: 'Query' } as FindBooksQueryDto;
-      await service.find({}, dto);
+    it('name - specified mode', async () => {
+      dto = { nameMode: 'substring', name: 'Query' };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: { [Op['substring']]: dto.query } },
+        where: { name: { [Op['substring']]: dto.name } },
         include: GenreModel,
+        limit: undefined,
+        offset: undefined,
+        order: undefined,
+      });
+    });
+
+    it('author - default mode', async () => {
+      dto = { author: 'Query' };
+      await service.find(dto);
+
+      expect(mockBookRepo.findAll).toHaveBeenCalledWith({
+        where: {},
+        include: [{
+          as: 'author',
+          model: UserModel,
+          attributes: ['id', 'username'],
+          where: { username: { [Op['startsWith']]: dto.author } },
+        }, GenreModel],
+        limit: undefined,
+        offset: undefined,
+        order: undefined,
+      });
+    });
+
+    it('author - specified mode', async () => {
+      dto = { authorMode: 'endsWith', author: 'Query' };
+      await service.find(dto);
+
+      expect(mockBookRepo.findAll).toHaveBeenCalledWith({
+        where: {},
+        include: [{
+          as: 'author',
+          model: UserModel,
+          attributes: ['id', 'username'],
+          where: { username: { [Op['endsWith']]: dto.author } },
+        }, GenreModel],
         limit: undefined,
         offset: undefined,
         order: undefined,
@@ -383,8 +421,8 @@ describe('BooksService', () => {
     });
 
     it('genres', async () => {
-      const dto = { genres: ['Fantasy'] } as FindBooksQueryDto;
-      await service.find({}, dto);
+      dto = { genres: ['Fantasy'] };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
         where: { id: { [Op.in]: [1] } },
@@ -396,11 +434,11 @@ describe('BooksService', () => {
     });
 
     it('query + genres', async () => {
-      const dto = { mode: 'substring', query: 'Query', genres: ['Fantasy'] } as FindBooksQueryDto;
-      await service.find({}, dto);
+      dto = { nameMode: 'substring', name: 'Query', genres: ['Fantasy'] };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: { [Op['substring']]: dto.query }, id: { [Op.in]: [1] } },
+        where: { name: { [Op['substring']]: dto.name }, id: { [Op.in]: [1] } },
         include: GenreModel,
         limit: undefined,
         offset: undefined,
@@ -409,8 +447,8 @@ describe('BooksService', () => {
     });
 
     it('orderBy', async () => {
-      const dto = { orderBy: 'name' } as FindBooksQueryDto;
-      await service.find({}, dto);
+      dto = { orderBy: 'name' };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
         where: {},
@@ -422,8 +460,8 @@ describe('BooksService', () => {
     });
 
     it('orderBy + orderDirection', async () => {
-      const dto = { orderBy: 'name', orderDirection: 'ASC' } as FindBooksQueryDto;
-      await service.find({}, dto);
+      dto = { orderBy: 'name', orderDirection: 'ASC' };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
         where: {},
@@ -435,8 +473,8 @@ describe('BooksService', () => {
     });
 
     it('orderBy: popularity', async () => {
-      const dto = { orderBy: 'popularity' } as FindBooksQueryDto;
-      await service.find({}, dto);
+      dto = { orderBy: 'popularity' };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
         where: {},
@@ -453,12 +491,12 @@ describe('BooksService', () => {
     });
 
     it('eager', async () => {
-      const dto = { eager: 'true' } as FindBooksQueryDto;
-      await service.find({}, dto);
+      dto = { eager: true };
+      await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
         where: {},
-        include: [UserModel, GenreModel],
+        include: [{ as: 'author', model: UserModel, attributes: ['id', 'username'], where: {} }, GenreModel],
         limit: undefined,
         offset: undefined,
         order: undefined,

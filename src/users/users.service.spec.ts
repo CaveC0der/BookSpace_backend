@@ -5,13 +5,26 @@ import UserModel from './user.model';
 import { ConfigService } from '../config/config.service';
 import * as bcryptjs from 'bcryptjs';
 import { BadRequestException, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { ValidationError, ValidationErrorItem } from 'sequelize';
+import { col, fn, ValidationError, ValidationErrorItem } from 'sequelize';
 import { FilesService } from '../files/files.service';
 import { Role } from '../roles/role.enum';
+import GenreModel from '../genres/models/genre.model';
+import BooksQueryDto from '../books/dtos/books-query.dto';
 
 describe('UsersService', () => {
   let service: UsersService;
 
+  const mockBook = {
+    id: 1,
+    name: 'MockBook',
+    cover: 'cover',
+    synopsis: null,
+    rating: 5,
+    authorId: 1,
+    viewsCount: 100,
+    reviewsCount: 100,
+    commentsCount: 100,
+  };
   const mockUser = {
     id: 1,
     username: 'mock',
@@ -22,6 +35,7 @@ describe('UsersService', () => {
     avatar: 'avatar.png',
     $add: jest.fn(),
     $remove: jest.fn(),
+    $get: jest.fn().mockImplementation(() => [mockBook]),
   };
   const returnMockUser = jest.fn().mockImplementation(() => mockUser);
   const mockUserRepo = {
@@ -244,6 +258,75 @@ describe('UsersService', () => {
       mockUser.update.mockImplementationOnce(() => { throw new Error(); });
 
       await expect(service.deleteAvatar(mockUser.id)).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('getBooks', () => {
+    it('authored - author', async () => {
+      await expect(service.getBooks(mockUser.id, 'authored', {})).resolves.toContainEqual(mockBook);
+    });
+
+    it('authored - reader / author without books', async () => {
+      mockUser.$get.mockImplementationOnce(() => []);
+
+      await expect(service.getBooks(mockUser.id, 'authored', {})).resolves.toEqual([]);
+    });
+
+    it('anyone - viewed', async () => {
+      await expect(service.getBooks(mockUser.id, 'viewed', {})).resolves.toContainEqual(mockBook);
+    });
+
+    it('orderBy', async () => {
+      const dto = { orderBy: 'name' } as BooksQueryDto;
+      await service.getBooks(mockUser.id, 'viewed', dto);
+
+      expect(mockUser.$get).toHaveBeenCalledWith('viewed', {
+        include: undefined,
+        limit: undefined,
+        offset: undefined,
+        order: [dto.orderBy],
+      });
+    });
+
+    it('orderBy + orderDirection', async () => {
+      const dto = { orderBy: 'name', orderDirection: 'DESC' } as BooksQueryDto;
+      await service.getBooks(mockUser.id, 'viewed', dto);
+
+      expect(mockUser.$get).toHaveBeenCalledWith('viewed', {
+        include: undefined,
+        limit: undefined,
+        offset: undefined,
+        order: [[dto.orderBy, dto.orderDirection]],
+      });
+    });
+
+    it('orderBy: popularity', async () => {
+      const dto = { orderBy: 'popularity' } as BooksQueryDto;
+      await service.getBooks(mockUser.id, 'viewed', dto);
+
+      expect(mockUser.$get).toHaveBeenCalledWith('viewed', {
+        include: undefined,
+        limit: undefined,
+        offset: undefined,
+        order: [[
+          fn('related_popularity',
+            col('BookModel.viewsCount'),
+            col('BookModel.reviewsCount'),
+            col('BookModel.commentsCount')),
+          'ASC']],
+      });
+    });
+
+    it('eager', async () => {
+      const dto = { eager: true } as BooksQueryDto;
+      await service.getBooks(mockUser.id, 'viewed', dto);
+
+      expect(mockUser.$get).toHaveBeenCalledWith('viewed', {
+        include: GenreModel,
+        limit: undefined,
+        offset: undefined,
+        order: undefined,
+      });
     });
   });
 

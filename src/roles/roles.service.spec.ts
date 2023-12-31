@@ -87,7 +87,7 @@ describe('RolesService', () => {
     });
 
     it('eager', async () => {
-      const dto = { eager: 'true' } as UsersQueryDto;
+      const dto = { eager: true } as UsersQueryDto;
       await service.getRoleUsers(mockRole.name, dto);
 
       expect(mockRole.$get).toHaveBeenCalledWith('users', {
