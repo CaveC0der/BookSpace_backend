@@ -7,7 +7,7 @@ import { Cons as GCons } from '../../genres/genre.constraint';
 import { Cons as UCons } from '../../users/user.constraint';
 
 // keyof typeof Op from sequelize
-const modes = ['startsWith', 'substring', 'endsWith', 'iLike'] as const;
+const modes = ['startsWith', 'substring', 'endsWith'] as const;
 
 export default class FindBooksQueryDto extends BooksQueryDto {
   @ApiPropertyOptional({ description: 'name of a book' })

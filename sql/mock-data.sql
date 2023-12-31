@@ -73,6 +73,7 @@ INSERT INTO books_genres
 VALUES
     (1, 'Fantasy'),
     (1, 'Romance'),
+    (1, 'Mystery'),
     (2, 'Drama'),
     (2, 'Mystery'),
     (3, 'Thriller'),

@@ -18,6 +18,7 @@ import { FilesService } from '../files/files.service';
 import { GenresService } from '../genres/genres.service';
 import GenreModel from '../genres/models/genre.model';
 import UserModel from '../users/user.model';
+import iLike from '../shared/utils/i-like';
 
 describe('BooksService', () => {
   let service: BooksService;
@@ -363,7 +364,7 @@ describe('BooksService', () => {
       await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: { [Op['startsWith']]: dto.name } },
+        where: { name: iLike(dto.name!) },
         include: GenreModel,
         limit: undefined,
         offset: undefined,
@@ -372,11 +373,11 @@ describe('BooksService', () => {
     });
 
     it('name - specified mode', async () => {
-      dto = { nameMode: 'substring', name: 'Query' };
+      dto = { nameMode: 'startsWith', name: 'Query' };
       await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: { [Op['substring']]: dto.name } },
+        where: { name: iLike(dto.name!, dto.nameMode) },
         include: GenreModel,
         limit: undefined,
         offset: undefined,
@@ -394,7 +395,7 @@ describe('BooksService', () => {
           as: 'author',
           model: UserModel,
           attributes: ['id', 'username'],
-          where: { username: { [Op['startsWith']]: dto.author } },
+          where: { username: iLike(dto.author!) },
         }, GenreModel],
         limit: undefined,
         offset: undefined,
@@ -412,7 +413,7 @@ describe('BooksService', () => {
           as: 'author',
           model: UserModel,
           attributes: ['id', 'username'],
-          where: { username: { [Op['endsWith']]: dto.author } },
+          where: { username: iLike(dto.author!, dto.authorMode) },
         }, GenreModel],
         limit: undefined,
         offset: undefined,
@@ -434,11 +435,11 @@ describe('BooksService', () => {
     });
 
     it('query + genres', async () => {
-      dto = { nameMode: 'substring', name: 'Query', genres: ['Fantasy'] };
+      dto = { name: 'Query', genres: ['Fantasy'] };
       await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: { [Op['substring']]: dto.name }, id: { [Op.in]: [1] } },
+        where: { name: iLike(dto.name!), id: { [Op.in]: [1] } },
         include: GenreModel,
         limit: undefined,
         offset: undefined,

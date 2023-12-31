@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './models/book.model';
-import { literal, Op, ValidationError } from 'sequelize';
+import { col, fn, Op, ValidationError, where } from 'sequelize';
 import { ViewModel } from './models/view.model';
 import BookUpdateDto from './dtos/book-update.dto';
 import { WhereOptions } from 'sequelize/types/model';
@@ -13,6 +13,7 @@ import { GenresService } from '../genres/genres.service';
 import UserModel from '../users/user.model';
 import GenreModel from '../genres/models/genre.model';
 import BookCreationDto from './dtos/book-creation.dto';
+import iLike from '../shared/utils/i-like';
 
 @Injectable()
 export class BooksService {
@@ -159,29 +160,28 @@ export class BooksService {
   }
 
   async find(dto: FindBooksQueryDto) {
-    const where: WhereOptions<BookModel> = {};
+    const bookWhere: WhereOptions<BookModel> = {};
     if (dto.name) {
-      where.name = { [Op[dto.nameMode ?? 'startsWith']]: dto.name };
+      bookWhere.name = iLike(dto.name, dto.nameMode);
     }
-
-    const userWhere: WhereOptions<UserModel> = {};
-    if (dto.author) {
-      userWhere.username = { [Op[dto.authorMode ?? 'startsWith']]: dto.author };
-    }
-
     if (dto.genres) {
-      where.id = {
+      bookWhere.id = {
         [Op.in]: (await this.bookGenreRepo.findAll({
           attributes: ['bookId'],
           where: { genre: { [Op.in]: dto.genres } },
           group: ['bookId'],
-          having: literal(`COUNT(genre) = ${dto.genres.length}`),
+          having: where(fn('COUNT', col('genre')), dto.genres.length),
         })).map(bg => bg.bookId),
       };
     }
 
+    const userWhere: WhereOptions<UserModel> = {};
+    if (dto.author) {
+      userWhere.username = iLike(dto.author, dto.authorMode);
+    }
+
     return this.bookRepo.findAll({
-      where,
+      where: bookWhere,
       limit: dto.limit,
       offset: dto.offset,
       order: extractBooksOrder(dto),
