@@ -11,17 +11,19 @@ import { Server } from 'http';
 import {
   adminLoginDto,
   adminSignupDto,
+  author2LoginDto,
+  author2SignupDto,
   authorLoginDto,
   authorSignupDto,
   bookCreationDto,
   bookUpdateDto,
+  genre2CreationDto,
   genreCreationDto,
   signupDto,
 } from '../data';
 import * as request from 'supertest';
 import { AuthService } from '../../src/auth/auth.service';
 import { UsersService } from '../../src/users/users.service';
-import UserModel from '../../src/users/user.model';
 import { Role } from '../../src/roles/role.enum';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -31,6 +33,8 @@ import { GenresService } from '../../src/genres/genres.service';
 import GenreModel from '../../src/genres/models/genre.model';
 import BookCreationDto from '../../src/books/dtos/book-creation.dto';
 import FindBooksQueryDto from '../../src/books/dtos/find-books-query.dto';
+import { AccessUserModel } from '../types';
+import BookUpdateDto from '../../src/books/dtos/book-update.dto';
 
 describe('Books e2e', () => {
   let app: NestExpressApplication;
@@ -40,10 +44,12 @@ describe('Books e2e', () => {
   let usersService: UsersService;
   let genresService: GenresService;
   let booksService: BooksService;
-  let user: { model: UserModel, accessToken: string };
-  let author: { model: UserModel, accessToken: string };
-  let admin: { model: UserModel, accessToken: string };
+  let user: AccessUserModel;
+  let author: AccessUserModel;
+  let author2: AccessUserModel;
+  let admin: AccessUserModel;
   let genre: GenreModel;
+  let genre2: GenreModel;
   let book: BookModel;
   let file: Buffer;
 
@@ -77,6 +83,11 @@ describe('Books e2e', () => {
     dto = (await authService.login(authorLoginDto)).dto;
     author = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
 
+    dto = (await authService.signup(author2SignupDto)).dto;
+    await usersService.addRole(dto.id, Role.Author);
+    dto = (await authService.login(author2LoginDto)).dto;
+    author2 = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
+
     dto = (await authService.signup(adminSignupDto)).dto;
     await usersService.addRole(dto.id, Role.Admin);
     await usersService.addRole(dto.id, Role.Author);
@@ -84,6 +95,7 @@ describe('Books e2e', () => {
     admin = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
 
     genre = await genresService.create(genreCreationDto);
+    genre2 = await genresService.create(genre2CreationDto);
 
     file = fs.readFileSync(path.join(__dirname, '../../static/test-img.png'));
   });
@@ -165,13 +177,13 @@ describe('Books e2e', () => {
 
   describe('(GET) /books/:id', () => {
     it('not found', () => request(server)
-      .get(`/books/${404}`)
+      .get('/books/404')
       .expect(404),
     );
 
     it('invalid path param', () => request(server)
-      .get(`/books/invalid`)
-      .expect(400)
+      .get('/books/invalid')
+      .expect(400),
     );
 
     it('success', () => request(server)
@@ -186,7 +198,31 @@ describe('Books e2e', () => {
   });
 
   describe('(PUT) /books/:id', () => {
-    it('success', () => request(server)
+    it('not found', () => request(server)
+      .put('/books/404')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(404),
+    );
+
+    it('invalid path param', () => request(server)
+      .put('/books/invalid')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(400),
+    );
+
+    it('not an author', () => request(server)
+      .put(`/books/${book.id}`)
+      .set('authorization', `Bearer ${user.accessToken}`)
+      .expect(403),
+    );
+
+    it('author, but not owner', () => request(server)
+      .put(`/books/${book.id}`)
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(403),
+    );
+
+    it('success - author', () => request(server)
       .put(`/books/${book.id}`)
       .set('authorization', `Bearer ${author.accessToken}`)
       .send(bookUpdateDto)
@@ -196,12 +232,57 @@ describe('Books e2e', () => {
         expect(book.synopsis).toBe(bookUpdateDto.synopsis);
       }),
     );
+
+    it('success - admin', () => request(server)
+      .put(`/books/${book.id}`)
+      .set('authorization', `Bearer ${admin.accessToken}`)
+      .send({ genres: [...book.genres.map(g => g.name), genre2CreationDto.name] } as BookUpdateDto)
+      .expect(200)
+      .expect(async () => {
+        book = await booksService.get(book.id);
+        expect(book.genres.map(g => g.name)).toEqual([genreCreationDto.name, genre2CreationDto.name]);
+      }),
+    );
   });
 
   describe('(DELETE) /books/:id', () => {
-    it('success', () => request(server)
+    it('not found', () => request(server)
+      .delete('/books/404')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(404),
+    );
+
+    it('invalid path param', () => request(server)
+      .delete('/books/invalid')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(400),
+    );
+
+    it('not an author', () => request(server)
+      .delete(`/books/${book.id}`)
+      .set('authorization', `Bearer ${user.accessToken}`)
+      .expect(403),
+    );
+
+    it('author, but not owner', () => request(server)
+      .delete(`/books/${book.id}`)
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(403),
+    );
+
+    it('success - author', () => request(server)
       .delete(`/books/${book.id}`)
       .set('authorization', `Bearer ${author.accessToken}`)
+      .expect(200)
+      .expect(async () => {
+        await expect(booksService.get(book.id)).rejects.toThrow(NotFoundException);
+        await expect(booksService.restore(admin.model.id, book.id, true)).resolves.toBeUndefined();
+      }),
+    );
+
+    it('success - admin', () => request(server)
+      .delete(`/books/${book.id}`)
+      .set('authorization', `Bearer ${admin.accessToken}`)
       .expect(200)
       .expect(async () => {
         await expect(booksService.get(book.id)).rejects.toThrow(NotFoundException);
@@ -210,6 +291,24 @@ describe('Books e2e', () => {
   });
 
   describe('(POST) /books/:id', () => {
+    it('not found', () => request(server)
+      .post('/books/404')
+      .set('authorization', `Bearer ${admin.accessToken}`)
+      .expect(404),
+    );
+
+    it('invalid path param', () => request(server)
+      .post('/books/invalid')
+      .set('authorization', `Bearer ${admin.accessToken}`)
+      .expect(400),
+    );
+
+    it('not an admin', () => request(server)
+      .post(`/books/${book.id}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .expect(403),
+    );
+
     it('success', () => request(server)
       .post(`/books/${book.id}`)
       .set('authorization', `Bearer ${admin.accessToken}`)
@@ -221,6 +320,37 @@ describe('Books e2e', () => {
   });
 
   describe('(POST) /books/:id/cover', () => {
+    it('not found', () => request(server)
+      .post('/books/404/cover')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(404),
+    );
+
+    it('invalid path param', () => request(server)
+      .post('/books/invalid/cover')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(400),
+    );
+
+    it('not an author', () => request(server)
+      .post(`/books/${book.id}/cover`)
+      .set('authorization', `Bearer ${user.accessToken}`)
+      .expect(403),
+    );
+
+    it('author, but not owner', () => request(server)
+      .post(`/books/${book.id}/cover`)
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(403),
+    );
+
+    it('filename without extension', () => request(server)
+      .post(`/books/${book.id}/cover`)
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .attach('img', file, 'test-img')
+      .expect(400),
+    );
+
     it('success', () => request(server)
       .post(`/books/${book.id}/cover`)
       .set('authorization', `Bearer ${author.accessToken}`)
@@ -230,6 +360,30 @@ describe('Books e2e', () => {
   });
 
   describe('(DELETE) /books/:id/cover', () => {
+    it('not found', () => request(server)
+      .delete('/books/404/cover')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(404),
+    );
+
+    it('invalid path param', () => request(server)
+      .delete('/books/invalid/cover')
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(400),
+    );
+
+    it('not an author', () => request(server)
+      .delete(`/books/${book.id}/cover`)
+      .set('authorization', `Bearer ${user.accessToken}`)
+      .expect(403),
+    );
+
+    it('author, but not owner', () => request(server)
+      .delete(`/books/${book.id}/cover`)
+      .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(403),
+    );
+
     it('success', () => request(server)
       .delete(`/books/${book.id}/cover`)
       .set('authorization', `Bearer ${admin.accessToken}`)
@@ -237,28 +391,28 @@ describe('Books e2e', () => {
     );
   });
 
-  describe('(POST) /books/:id/genres', () => {
-    it('success', () => request(server)
-      .post(`/books/${book.id}/genres`)
-      .query({ names: 'Sci-Fi' })
-      .set('authorization', `Bearer ${author.accessToken}`)
-      .expect(201)
-      .expect(async () => {
-        const genres = (await booksService.get(book.id)).genres.map(g => g.name);
-        expect(genres).toEqual(bookCreationDto.genres);
-      }),
-    );
-  });
-
   describe('(DELETE) /books/:id/genres', () => {
     it('success', () => request(server)
       .delete(`/books/${book.id}/genres`)
-      .query({ names: 'Sci-Fi' })
+      .query({ names: genreCreationDto.name })
       .set('authorization', `Bearer ${admin.accessToken}`)
       .expect(200)
       .expect(async () => {
         const genres = (await booksService.get(book.id)).genres.map(g => g.name);
-        expect(genres).toHaveLength(0);
+        expect(genres).not.toContain(genreCreationDto.name);
+      }),
+    );
+  });
+
+  describe('(POST) /books/:id/genres', () => {
+    it('success', () => request(server)
+      .post(`/books/${book.id}/genres`)
+      .query({ names: genreCreationDto.name })
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .expect(201)
+      .expect(async () => {
+        const genres = (await booksService.get(book.id)).genres.map(g => g.name);
+        expect(genres).toContain(genreCreationDto.name);
       }),
     );
   });
@@ -272,10 +426,14 @@ describe('Books e2e', () => {
     await author.model.token?.destroy();
     await author.model.destroy({ force: true });
 
+    await author2.model.token?.destroy();
+    await author2.model.destroy({ force: true });
+
     await admin.model.token?.destroy();
     await admin.model.destroy({ force: true });
 
     await genre.destroy();
+    await genre2.destroy();
 
     await app.close();
   });

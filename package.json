@@ -18,8 +18,8 @@
     "test:cov": "jest --coverage -i",
     "test:cov-service": "jest --coverage -i --collectCoverageFrom=\"**/*.service.(t|j)s\"",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./e2e/jest-e2e.json -i",
-    "test:e2e-silent": "jest --config ./e2e/jest-e2e.json -i --silent"
+    "test:e2e": "jest --config ./test/jest-e2e.json -i",
+    "test:e2e-silent": "jest --config ./test/jest-e2e.json -i --silent"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

@@ -31,6 +31,16 @@ export const authorSignupDto: SignupRequestT = {
   username: 'Author-e2e',
 };
 
+export const author2LoginDto: LoginRequestT = {
+  email: 'author-2-e2e@mail.com',
+  password: 'author-2-e2e-secret',
+};
+
+export const author2SignupDto: SignupRequestT = {
+  ...author2LoginDto,
+  username: 'Author-2-e2e',
+};
+
 export const loginDto: LoginRequestT = {
   email: 'e2e@mail.com',
   password: 'e2e-secret',
@@ -50,7 +60,7 @@ export const roleUpdateDto: RoleUpdateT = {
 };
 
 export const genreCreationDto: GenreCreationT = {
-  name: 'Sci-Fi',
+  name: 'Genre-e2e',
   description: 'Visions of future...',
 };
 
@@ -58,10 +68,15 @@ export const genreUpdateDto: GenreUpdateT = {
   description: 'Tales about future...',
 };
 
+export const genre2CreationDto: GenreCreationT = {
+  name: 'Genre-2-e2e',
+  description: 'Visions of future... part 2',
+};
+
 export const bookCreationDto: BookCreationDto = {
   name: 'Boring Adventures',
   synopsis: '...',
-  genres: ['Sci-Fi'],
+  genres: [genreCreationDto.name],
 };
 
 export const bookUpdateDto: BookUpdateDto = {

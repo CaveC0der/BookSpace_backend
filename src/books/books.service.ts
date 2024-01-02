@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './models/book.model';
 import { col, fn, Op, ValidationError, where } from 'sequelize';
@@ -55,9 +55,13 @@ export class BooksService {
 
   async update(userId: number, bookId: number, dto: BookUpdateDto, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-    if (!book) {throw new NotFoundException();}
+    if (!book) {
+      throw new NotFoundException();
+    }
 
-    if (book.authorId !== userId && !force) {throw new ForbiddenException();}
+    if (book.authorId !== userId && !force) {
+      throw new ForbiddenException();
+    }
 
     try {
       await book.update({ name: dto.name, synopsis: dto.synopsis });
@@ -108,9 +112,13 @@ export class BooksService {
     try {
       await book.update({ cover: await this.filesService.save(file) });
     } catch (error) {
-      throw new BadRequestException(error instanceof ValidationError
-        ? error.errors.map(err => err.message)
-        : error);
+      if (error instanceof ValidationError) {
+        throw new BadRequestException(error.errors.map(err => err.message));
+      }
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new BadRequestException(error);
     }
   }
 

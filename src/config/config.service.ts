@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService as DefaultConfigService } from '@nestjs/config';
 import { SequelizeModuleOptions } from '@nestjs/sequelize';
 import { ThrottlerOptions } from '@nestjs/throttler';
-import { join } from 'path';
+import { join, normalize } from 'path';
 import { Algorithm } from 'jsonwebtoken';
 
 @Injectable()
@@ -57,7 +57,7 @@ export class ConfigService {
   }
 
   get SERVE_STATIC_PATH(): string {
-    return join(__dirname, '../..', this.defaultConfigService.getOrThrow('SERVE_STATIC_FOLDER'));
+    return normalize(join(__dirname, '..', '..', this.defaultConfigService.getOrThrow('SERVE_STATIC_FOLDER')));
   }
 
   get SERVE_STATIC_PREFIX(): string {
