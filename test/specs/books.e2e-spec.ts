@@ -15,18 +15,21 @@ import {
   author2SignupDto,
   authorLoginDto,
   authorSignupDto,
+  book2CreationDto,
+  book3CreationDto,
   bookCreationDto,
   bookUpdateDto,
   genre2CreationDto,
   genreCreationDto,
+  img,
+  restrictedLoginDto,
+  restrictedSignupDto,
   signupDto,
 } from '../data';
 import * as request from 'supertest';
 import { AuthService } from '../../src/auth/auth.service';
 import { UsersService } from '../../src/users/users.service';
 import { Role } from '../../src/roles/role.enum';
-import * as fs from 'fs';
-import * as path from 'path';
 import { BooksService } from '../../src/books/books.service';
 import BookModel from '../../src/books/models/book.model';
 import { GenresService } from '../../src/genres/genres.service';
@@ -48,10 +51,12 @@ describe('Books e2e', () => {
   let author: AccessUserModel;
   let author2: AccessUserModel;
   let admin: AccessUserModel;
+  let restricted: AccessUserModel;
   let genre: GenreModel;
   let genre2: GenreModel;
   let book: BookModel;
-  let file: Buffer;
+  let book2: BookModel;
+  let book3: BookModel;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -88,6 +93,12 @@ describe('Books e2e', () => {
     dto = (await authService.login(author2LoginDto)).dto;
     author2 = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
 
+    dto = (await authService.signup(restrictedSignupDto)).dto;
+    await usersService.addRole(dto.id, Role.Author);
+    await usersService.addRole(dto.id, Role.Restricted);
+    dto = (await authService.login(restrictedLoginDto)).dto;
+    restricted = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
+
     dto = (await authService.signup(adminSignupDto)).dto;
     await usersService.addRole(dto.id, Role.Admin);
     await usersService.addRole(dto.id, Role.Author);
@@ -97,7 +108,8 @@ describe('Books e2e', () => {
     genre = await genresService.create(genreCreationDto);
     genre2 = await genresService.create(genre2CreationDto);
 
-    file = fs.readFileSync(path.join(__dirname, '../../static/test-img.png'));
+    book2 = await booksService.create(author2.model.id, book2CreationDto);
+    book3 = await booksService.create(restricted.model.id, book3CreationDto);
   });
 
   describe('(POST) /books', () => {
@@ -117,6 +129,13 @@ describe('Books e2e', () => {
     it('not an author', () => request(server)
       .post('/books')
       .set('authorization', `Bearer ${user.accessToken}`)
+      .send(bookCreationDto)
+      .expect(403),
+    );
+
+    it('restricted', () => request(server)
+      .post('/books')
+      .set('authorization', `Bearer ${restricted.accessToken}`)
       .send(bookCreationDto)
       .expect(403),
     );
@@ -170,7 +189,10 @@ describe('Books e2e', () => {
       .expect(200)
       .expect(({ body }: { body: BookModel[] }) => {
         expect(body).toBeInstanceOf(Array);
-        expect(body.map(b => b.name)).toContain(bookCreationDto.name);
+        const names = body.map(b => b.name);
+        expect(names).toContain(bookCreationDto.name);
+        expect(names).toContain(book2CreationDto.name);
+        expect(names).toContain(book3CreationDto.name);
       }),
     );
   });
@@ -200,13 +222,13 @@ describe('Books e2e', () => {
   describe('(PUT) /books/:id', () => {
     it('not found', () => request(server)
       .put('/books/404')
-      .set('authorization', `Bearer ${author2.accessToken}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
       .expect(404),
     );
 
     it('invalid path param', () => request(server)
       .put('/books/invalid')
-      .set('authorization', `Bearer ${author2.accessToken}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
       .expect(400),
     );
 
@@ -219,6 +241,12 @@ describe('Books e2e', () => {
     it('author, but not owner', () => request(server)
       .put(`/books/${book.id}`)
       .set('authorization', `Bearer ${author2.accessToken}`)
+      .expect(403),
+    );
+
+    it('restricted', () => request(server)
+      .put(`/books/${book3.id}`)
+      .set('authorization', `Bearer ${restricted.accessToken}`)
       .expect(403),
     );
 
@@ -270,18 +298,26 @@ describe('Books e2e', () => {
       .expect(403),
     );
 
+    it('success - restricted', () => request(server)
+      .delete(`/books/${book3.id}`)
+      .set('authorization', `Bearer ${restricted.accessToken}`)
+      .expect(200)
+      .expect(async () => {
+        await expect(booksService.get(book3.id)).rejects.toThrow(NotFoundException);
+      }),
+    );
+
     it('success - author', () => request(server)
       .delete(`/books/${book.id}`)
       .set('authorization', `Bearer ${author.accessToken}`)
       .expect(200)
       .expect(async () => {
         await expect(booksService.get(book.id)).rejects.toThrow(NotFoundException);
-        await expect(booksService.restore(admin.model.id, book.id, true)).resolves.toBeUndefined();
       }),
     );
 
     it('success - admin', () => request(server)
-      .delete(`/books/${book.id}`)
+      .delete(`/books/${book2.id}`)
       .set('authorization', `Bearer ${admin.accessToken}`)
       .expect(200)
       .expect(async () => {
@@ -303,18 +339,27 @@ describe('Books e2e', () => {
       .expect(400),
     );
 
-    it('not an admin', () => request(server)
-      .post(`/books/${book.id}`)
-      .set('authorization', `Bearer ${author.accessToken}`)
+    it('restricted', () => request(server)
+      .post(`/books/${book3.id}`)
+      .set('authorization', `Bearer ${restricted.accessToken}`)
       .expect(403),
     );
 
-    it('success', () => request(server)
+    it('success - author', () => request(server)
       .post(`/books/${book.id}`)
-      .set('authorization', `Bearer ${admin.accessToken}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
       .expect(201)
       .expect(async () => {
         expect((await booksService.get(book.id)).name).toBe(book.name);
+      }),
+    );
+
+    it('success - admin', () => request(server)
+      .post(`/books/${book2.id}`)
+      .set('authorization', `Bearer ${admin.accessToken}`)
+      .expect(201)
+      .expect(async () => {
+        expect((await booksService.get(book2.id)).name).toBe(book2.name);
       }),
     );
   });
@@ -322,13 +367,13 @@ describe('Books e2e', () => {
   describe('(POST) /books/:id/cover', () => {
     it('not found', () => request(server)
       .post('/books/404/cover')
-      .set('authorization', `Bearer ${author2.accessToken}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
       .expect(404),
     );
 
     it('invalid path param', () => request(server)
       .post('/books/invalid/cover')
-      .set('authorization', `Bearer ${author2.accessToken}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
       .expect(400),
     );
 
@@ -344,22 +389,34 @@ describe('Books e2e', () => {
       .expect(403),
     );
 
+    it('restricted', () => request(server)
+      .post(`/books/${book3.id}/cover`)
+      .set('authorization', `Bearer ${restricted.accessToken}`)
+      .expect(403),
+    );
+
     it('filename without extension', () => request(server)
       .post(`/books/${book.id}/cover`)
       .set('authorization', `Bearer ${author.accessToken}`)
-      .attach('img', file, 'test-img')
+      .attach(img.fieldname, img.buffer, 'test-img')
       .expect(400),
     );
 
     it('success', () => request(server)
       .post(`/books/${book.id}/cover`)
       .set('authorization', `Bearer ${author.accessToken}`)
-      .attach('img', file, 'test-img.png')
+      .attach(img.fieldname, img.buffer, img.originalname)
       .expect(201),
     );
   });
 
   describe('(DELETE) /books/:id/cover', () => {
+    beforeAll(async () => {
+      await booksService.restore(admin.model.id, book3.id, true);
+      await booksService.setCover(author2.model.id, book2.id, img);
+      await booksService.setCover(restricted.model.id, book3.id, img);
+    });
+
     it('not found', () => request(server)
       .delete('/books/404/cover')
       .set('authorization', `Bearer ${author2.accessToken}`)
@@ -384,8 +441,20 @@ describe('Books e2e', () => {
       .expect(403),
     );
 
-    it('success', () => request(server)
+    it('success - restricted', () => request(server)
+      .delete(`/books/${book3.id}/cover`)
+      .set('authorization', `Bearer ${restricted.accessToken}`)
+      .expect(200),
+    );
+
+    it('success - author', () => request(server)
       .delete(`/books/${book.id}/cover`)
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .expect(200),
+    );
+
+    it('success - admin', () => request(server)
+      .delete(`/books/${book2.id}/cover`)
       .set('authorization', `Bearer ${admin.accessToken}`)
       .expect(200),
     );
@@ -418,6 +487,17 @@ describe('Books e2e', () => {
       .query({ names: genreCreationDto.name })
       .set('authorization', `Bearer ${author2.accessToken}`)
       .expect(403),
+    );
+
+    it('success - restricted', () => request(server)
+      .delete(`/books/${book3.id}/genres`)
+      .query({ names: genreCreationDto.name })
+      .set('authorization', `Bearer ${restricted.accessToken}`)
+      .expect(200)
+      .expect(async () => {
+        const genres = (await booksService.get(book3.id)).genres.map(g => g.name);
+        expect(genres).not.toContain(genreCreationDto.name);
+      }),
     );
 
     it('success - author', () => request(server)
@@ -472,6 +552,17 @@ describe('Books e2e', () => {
       .expect(403),
     );
 
+    it('success - restricted', () => request(server)
+      .post(`/books/${book3.id}/genres`)
+      .query({ names: genreCreationDto.name })
+      .set('authorization', `Bearer ${restricted.accessToken}`)
+      .expect(201)
+      .expect(async () => {
+        const genres = (await booksService.get(book3.id)).genres.map(g => g.name);
+        expect(genres).toContain(genreCreationDto.name);
+      }),
+    );
+
     it('success - author', () => request(server)
       .post(`/books/${book.id}/genres`)
       .query({ names: genreCreationDto.name })
@@ -497,6 +588,8 @@ describe('Books e2e', () => {
 
   afterAll(async () => {
     await book.destroy({ force: true });
+    await book2.destroy({ force: true });
+    await book3.destroy({ force: true });
 
     await user.model.token?.destroy();
     await user.model.destroy({ force: true });
@@ -509,6 +602,9 @@ describe('Books e2e', () => {
 
     await admin.model.token?.destroy();
     await admin.model.destroy({ force: true });
+
+    await restricted.model.token?.destroy();
+    await restricted.model.destroy({ force: true });
 
     await genre.destroy();
     await genre2.destroy();

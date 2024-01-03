@@ -38,7 +38,7 @@ export class MeController {
   constructor(private usersService: UsersService) {}
 
   @ApiOperation({ summary: 'update user' })
-  @Roles(Role.Reader)
+  @Roles([Role.User], [Role.Restricted])
   @Put()
   async update(@TokenPayload('id') id: number,
                @Body() dto: UserUpdateDto) {
@@ -46,7 +46,7 @@ export class MeController {
   }
 
   @ApiOperation({ summary: 'delete user' })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Delete()
   async delete(@TokenPayload('id') id: number) {
     await this.usersService.delete(id);
@@ -55,7 +55,7 @@ export class MeController {
   @ApiOperation({ summary: 'set avatar' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ schema: { type: 'object', properties: { img: { type: 'file', format: 'binary' } } } })
-  @Roles(Role.Reader)
+  @Roles([Role.User], [Role.Restricted])
   @Post('avatar')
   @UseInterceptors(FileInterceptor('img'))
   async setAvatar(@TokenPayload('id') id: number,
@@ -64,7 +64,7 @@ export class MeController {
   }
 
   @ApiOperation({ summary: 'delete avatar' })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Delete('avatar')
   async deleteAvatar(@TokenPayload('id') id: number) {
     await this.usersService.deleteAvatar(id);
@@ -72,7 +72,7 @@ export class MeController {
 
   @ApiOperation({ summary: 'get authored books' })
   @ApiResponse({ status: 200, type: [BookModel] })
-  @Roles(Role.Author)
+  @Roles([Role.Author])
   @Get('books/authored')
   async getAuthoredBooks(@TokenPayload('id') id: number,
                          @Query() dto: BooksQueryDto) {
@@ -81,7 +81,7 @@ export class MeController {
 
   @ApiOperation({ summary: 'get viewed books' })
   @ApiResponse({ status: 200, type: [BookModel] })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Get('books/viewed')
   async getViewedBooks(@TokenPayload('id') id: number,
                        @Query() dto: BooksQueryDto) {

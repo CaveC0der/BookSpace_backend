@@ -23,8 +23,8 @@ describe('AuthService', () => {
     email: 'mock@mail.com',
     password: 'hashed_8_mock-secret',
     token: null as any,
-    roles: [{ name: 'Reader' }],
-    $get: jest.fn().mockImplementation(() => [{ name: 'Reader' }]),
+    roles: [{ name: 'User' }],
+    $get: jest.fn().mockImplementation(() => [{ name: 'User' }]),
     $create: jest.fn(),
   };
   const returnMockUser = jest.fn().mockImplementation(() => mockUser);
@@ -79,7 +79,7 @@ describe('AuthService', () => {
       mockUserService.getCreateGet.mockImplementationOnce(() => [mockUser, true]);
 
       await expect(service.signup(mockSignupDto)).resolves.toStrictEqual({
-        dto: new SignupResponseDto({ id: 1, roles: ['Reader'] }, '1-access-token'),
+        dto: new SignupResponseDto({ id: 1, roles: ['User'] }, '1-access-token'),
         refreshToken: '1-refresh-token',
       });
     });
@@ -92,7 +92,7 @@ describe('AuthService', () => {
   describe('login', () => {
     it('success', async () => {
       await expect(service.login(mockSignupDto)).resolves.toStrictEqual({
-        dto: new LoginResponseDto({ id: 1, roles: ['Reader'] }, mockUser.username, '1-access-token'),
+        dto: new LoginResponseDto({ id: 1, roles: ['User'] }, mockUser.username, '1-access-token'),
         refreshToken: '1-refresh-token',
       });
     });
@@ -113,7 +113,7 @@ describe('AuthService', () => {
       mockUser.token = { update: jest.fn() };
 
       await expect(service.login(mockSignupDto)).resolves.toStrictEqual({
-        dto: new LoginResponseDto({ id: 1, roles: ['Reader'] }, mockUser.username, '1-access-token'),
+        dto: new LoginResponseDto({ id: 1, roles: ['User'] }, mockUser.username, '1-access-token'),
         refreshToken: '1-refresh-token',
       });
       expect(mockUser.token.update).toHaveBeenCalledWith({ value: '1-refresh-token' });
@@ -125,7 +125,7 @@ describe('AuthService', () => {
       mockUser.token = { value: '1-refresh-token', update: jest.fn() };
 
       await expect(service.refresh(mockUser.id, '1-refresh-token')).resolves.toStrictEqual({
-        dto: new LoginResponseDto({ id: 1, roles: ['Reader'] }, mockUser.username, '1-access-token'),
+        dto: new LoginResponseDto({ id: 1, roles: ['User'] }, mockUser.username, '1-access-token'),
         refreshToken: '1-refresh-token',
       });
       expect(mockUser.token.update).toHaveBeenCalledWith({ value: '1-refresh-token' });

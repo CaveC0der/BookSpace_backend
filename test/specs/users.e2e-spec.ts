@@ -8,14 +8,12 @@ import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Server } from 'http';
-import { adminLoginDto, adminSignupDto, signupDto, userUpdateDto } from '../data';
+import { adminLoginDto, adminSignupDto, img, signupDto, userUpdateDto } from '../data';
 import * as request from 'supertest';
 import { AuthService } from '../../src/auth/auth.service';
 import { UsersService } from '../../src/users/users.service';
 import UserModel from '../../src/users/user.model';
 import { Role } from '../../src/roles/role.enum';
-import * as fs from 'fs';
-import * as path from 'path';
 import RoleModel from '../../src/roles/models/role.model';
 
 describe('Users e2e', () => {
@@ -26,7 +24,6 @@ describe('Users e2e', () => {
   let usersService: UsersService;
   let user: { model: UserModel, accessToken: string };
   let admin: { model: UserModel, accessToken: string };
-  let file: Buffer;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,8 +52,6 @@ describe('Users e2e', () => {
     await usersService.addRole(dto.id, Role.Author);
     dto = (await authService.login(adminLoginDto)).dto;
     admin = { model: await usersService.safeGetById(dto.id), accessToken: dto.accessToken };
-
-    file = fs.readFileSync(path.join(__dirname, '../../static/test-img.png'));
   });
 
   describe('(PUT) /users/me', () => {
@@ -88,7 +83,7 @@ describe('Users e2e', () => {
     it('success', () => request(server)
       .post('/users/me/avatar')
       .set('authorization', `Bearer ${user.accessToken}`)
-      .attach('img', file, 'test-img.png')
+      .attach(img.fieldname, img.buffer, img.originalname)
       .expect(201),
     );
   });
@@ -138,10 +133,7 @@ describe('Users e2e', () => {
 
   describe('(DELETE) /users/:id/avatar', () => {
     beforeAll(async () => {
-      await usersService.setAvatar(user.model.id, {
-        buffer: file,
-        originalname: 'test-img.png',
-      } as Express.Multer.File);
+      await usersService.setAvatar(user.model.id, img);
     });
 
     it('success', () => request(server)
@@ -176,7 +168,7 @@ describe('Users e2e', () => {
       .expect(200)
       .expect(async () => {
         const roles = (await usersService.safeGetById(user.model.id, [RoleModel])).roles.map(r => r.name);
-        expect(roles).toEqual([Role.Reader]);
+        expect(roles).toEqual([Role.User]);
       }),
     );
   });

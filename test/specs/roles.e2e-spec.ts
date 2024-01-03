@@ -59,8 +59,8 @@ describe('Roles e2e', () => {
       .get('/roles')
       .expect(200)
       .expect(({ body }: { body: RoleModel[] }) => {
-        const roles = body.map(r => r.name);
-        expect(roles).toEqual(['Reader', 'Author', 'Admin']);
+        const roles = body.map(r => r.name).sort();
+        expect(roles).toEqual(['Admin', 'Author', 'Restricted', 'User']);
       }),
     );
   });

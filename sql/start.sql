@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION after_create_user_tg()
     RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO users_roles VALUES (NEW.id, 'Reader');
+    INSERT INTO users_roles VALUES (NEW.id, 'User');
 
     RETURN NEW;
 END;
@@ -257,6 +257,7 @@ $$ LANGUAGE plpgsql;
 
 INSERT INTO roles
 VALUES
-    ('Reader', NULL, NOW()),
+    ('User', NULL, NOW()),
     ('Author', NULL, NOW()),
-    ('Admin', NULL, NOW());
+    ('Admin', NULL, NOW()),
+    ('Restricted', NULL, NOW());

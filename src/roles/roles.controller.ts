@@ -53,7 +53,7 @@ export class RolesController {
   }
 
   @ApiOperation({ summary: 'update role (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Put(':id')
   async update(@Param('id', new ParseEnumPipe(Role)) name: Role,
                @Body() dto: RoleUpdateDto) {

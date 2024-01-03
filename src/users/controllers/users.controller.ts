@@ -44,7 +44,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'delete user (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Delete(':id')
   async deleteUser(@Param('id', ParseIntPipe) id: number,
                    @Query() dto: DeleteDto) {
@@ -52,21 +52,21 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'restore user (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Post(':id')
   async restore(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.restore(id);
   }
 
   @ApiOperation({ summary: 'delete user avatar (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Delete(':id/avatar')
   async deleteUserAvatar(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.deleteAvatar(id);
   }
 
   @ApiOperation({ summary: 'add role (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Post(':id/roles')
   async addRole(@Param('id', ParseIntPipe) id: number,
                 @Query() dto: RoleDto) {
@@ -74,7 +74,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'exclude role (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Delete(':id/roles')
   async excludeRole(@Param('id', ParseIntPipe) id: number,
                     @Query() dto: RoleDto) {

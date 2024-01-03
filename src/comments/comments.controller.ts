@@ -42,7 +42,7 @@ export class CommentsController {
 
   @ApiOperation({ summary: 'create comment' })
   @ApiResponse({ status: 201, type: CommentModel })
-  @Roles(Role.Reader)
+  @Roles([Role.User], [Role.Restricted])
   @Post()
   async create(@TokenPayload('id') id: number,
                @Body() dto: CommentCreationDto) {
@@ -51,14 +51,14 @@ export class CommentsController {
 
   @ApiOperation({ summary: 'get comment' })
   @ApiResponse({ status: 200, type: CommentModel })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Get(':id')
   async get(@Param('id', ParseIntPipe) id: number) {
     return this.commentsService.get(id);
   }
 
   @ApiOperation({ summary: 'update comment' })
-  @Roles(Role.Reader)
+  @Roles([Role.User], [Role.Restricted])
   @Put(':id')
   async update(@TokenPayload('id') userId: number,
                @Param('id', ParseIntPipe) commentId: number,
@@ -67,7 +67,7 @@ export class CommentsController {
   }
 
   @ApiOperation({ summary: 'delete comment (user, admin)' })
-  @Roles(Role.Reader, Role.Admin)
+  @Roles([Role.User, Role.Admin])
   @Delete(':id')
   async delete(@TokenPayload() payload: TokenPayloadT,
                @Param('id', ParseIntPipe) commentId: number) {

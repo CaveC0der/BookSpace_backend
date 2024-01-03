@@ -46,7 +46,7 @@ export class BooksController {
 
   @ApiOperation({ summary: 'create book' })
   @ApiResponse({ status: 201, type: BookModel })
-  @Roles(Role.Author)
+  @Roles([Role.Author], [Role.Restricted])
   @Post()
   async create(@TokenPayload('id') userId: number,
                @Body() dto: BookCreationDto) {
@@ -71,7 +71,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'update book (author, admin)' })
-  @Roles(Role.Author, Role.Admin)
+  @Roles([Role.Author, Role.Admin], [Role.Restricted])
   @Put(':id')
   async update(@TokenPayload() payload: TokenPayloadT,
                @Param('id', ParseIntPipe) bookId: number,
@@ -80,7 +80,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'delete book (author, admin)' })
-  @Roles(Role.Author, Role.Admin)
+  @Roles([Role.Author, Role.Admin])
   @Delete(':id')
   async delete(@TokenPayload() payload: TokenPayloadT,
                @Param('id', ParseIntPipe) bookId: number,
@@ -89,7 +89,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'restore book (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Author, Role.Admin], [Role.Restricted])
   @Post(':id')
   async restore(@TokenPayload() payload: TokenPayloadT,
                 @Param('id', ParseIntPipe) bookId: number) {
@@ -99,7 +99,7 @@ export class BooksController {
   @ApiOperation({ summary: 'set cover (author)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ schema: { type: 'object', properties: { img: { type: 'file', format: 'binary' } } } })
-  @Roles(Role.Author)
+  @Roles([Role.Author], [Role.Restricted])
   @Post(':id/cover')
   @UseInterceptors(FileInterceptor('img'))
   async setCover(@TokenPayload('id') id: number,
@@ -109,7 +109,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'delete cover (author, admin)' })
-  @Roles(Role.Author, Role.Admin)
+  @Roles([Role.Author, Role.Admin])
   @Delete(':id/cover')
   async deleteCover(@TokenPayload() payload: TokenPayloadT,
                     @Param('id', ParseIntPipe) bookId: number) {
@@ -117,7 +117,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'add genre (author, admin)', description: 'ignores non-existing genres' })
-  @Roles(Role.Author, Role.Admin)
+  @Roles([Role.Author, Role.Admin])
   @Post(':id/genres')
   async addGenres(@TokenPayload() payload: TokenPayloadT,
                   @Param('id', ParseIntPipe) bookId: number,
@@ -126,7 +126,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'remove genres (author, admin)', description: 'ignores non-existing genres' })
-  @Roles(Role.Author, Role.Admin)
+  @Roles([Role.Author, Role.Admin])
   @Delete(':id/genres')
   async removeGenres(@TokenPayload() payload: TokenPayloadT,
                      @Param('id', ParseIntPipe) bookId: number,

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import BookModel from './models/book.model';
 import { col, fn, Op, ValidationError, where } from 'sequelize';
@@ -14,6 +14,7 @@ import UserModel from '../users/user.model';
 import GenreModel from '../genres/models/genre.model';
 import BookCreationDto from './dtos/book-creation.dto';
 import iLike from '../shared/utils/i-like';
+import throwHttpException from '../shared/utils/throw-http-exception';
 
 @Injectable()
 export class BooksService {
@@ -112,19 +113,13 @@ export class BooksService {
     try {
       await book.update({ cover: await this.filesService.save(file) });
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw new BadRequestException(error.errors.map(err => err.message));
-      }
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new BadRequestException(error);
+      throwHttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 
   async deleteCover(userId: number, bookId: number, force?: boolean) {
     const book = await this.bookRepo.findByPk(bookId);
-    if (!book) {
+    if (!book || !book.cover) {
       throw new NotFoundException();
     }
 
@@ -132,16 +127,11 @@ export class BooksService {
       throw new ForbiddenException();
     }
 
-    if (book.cover) {
-      await this.filesService.delete(book.cover);
-    }
-
     try {
+      await this.filesService.delete(book.cover);
       await book.update({ cover: null });
     } catch (error) {
-      throw new BadRequestException(error instanceof ValidationError
-        ? error.errors.map(err => err.message)
-        : error);
+      throwHttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
 

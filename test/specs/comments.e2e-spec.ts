@@ -28,6 +28,8 @@ import { GenresService } from '../../src/genres/genres.service';
 import GenreModel from '../../src/genres/models/genre.model';
 import CommentModel from '../../src/comments/comment.model';
 import { CommentsService } from '../../src/comments/comments.service';
+import { signToken } from '../helpers';
+import CommentCreationDto from '../../src/comments/dtos/comment-creation.dto';
 
 describe('Comments e2e', () => {
   let app: NestExpressApplication;
@@ -82,6 +84,36 @@ describe('Comments e2e', () => {
   });
 
   describe('(POST) /comments', () => {
+    it('without token', () => request(server)
+      .post('/comments')
+      .send(commentCreationDto)
+      .expect(401),
+    );
+
+    it('invalid token', () => request(server)
+      .post('/comments')
+      .send(commentCreationDto)
+      .set('authorization', `Bearer ${user.accessToken.slice(0, -5)}`)
+      .expect(401),
+    );
+
+    it('not a reader', () => request(server)
+      .post('/comments')
+      .set('authorization', `Bearer ${signToken({
+        id: user.model.id,
+        roles: [],
+      }, config.JWT_ACCESS_SECRET, config.JWT_ALGORITHM, config.JWT_ACCESS_EXPIRES_IN)}`)
+      .send(commentCreationDto)
+      .expect(403),
+    );
+
+    it('invalid data', () => request(server)
+      .post('/comments')
+      .set('authorization', `Bearer ${user.accessToken}`)
+      .send({ bookId: 0 } as CommentCreationDto)
+      .expect(400),
+    );
+
     it('success', () => request(server)
       .post('/comments')
       .set('authorization', `Bearer ${user.accessToken}`)

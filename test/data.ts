@@ -10,6 +10,8 @@ import CommentCreationDto from '../src/comments/dtos/comment-creation.dto';
 import { CommentUpdateT } from '../src/comments/types/comment-update.type';
 import ReviewCreationDto from '../src/reviews/dtos/review-creation.dto';
 import { ReviewUpdateT } from '../src/reviews/types/review-update.type';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const adminLoginDto: LoginRequestT = {
   email: 'admin-e2e@mail.com',
@@ -51,6 +53,16 @@ export const signupDto: SignupRequestT = {
   username: 'User-e2e',
 };
 
+export const restrictedLoginDto: LoginRequestT = {
+  email: 'restricted-e2e@mail.com',
+  password: 'restricted-e2e-secret',
+};
+
+export const restrictedSignupDto: SignupRequestT = {
+  ...restrictedLoginDto,
+  username: 'Restricted-e2e',
+};
+
 export const userUpdateDto: UserUpdateT = {
   username: 'UpdatedUser-e2e',
 };
@@ -79,6 +91,18 @@ export const bookCreationDto: BookCreationDto = {
   genres: [genreCreationDto.name],
 };
 
+export const book2CreationDto: BookCreationDto = {
+  name: 'Boring Adventures 2',
+  synopsis: '...',
+  genres: [genre2CreationDto.name],
+};
+
+export const book3CreationDto: BookCreationDto = {
+  name: 'Boring Adventures 3',
+  synopsis: '...',
+  genres: [genreCreationDto.name],
+};
+
 export const bookUpdateDto: BookUpdateDto = {
   synopsis: '...nothing',
 };
@@ -100,3 +124,12 @@ export const reviewCreationDto: ReviewCreationDto = {
 export const reviewUpdateDto: ReviewUpdateT = {
   rate: 4,
 };
+
+export const img = {
+  fieldname: 'img',
+  originalname: 'test-img.jpg',
+  encoding: '7bit',
+  mimetype: 'image/jpeg',
+  buffer: readFileSync(join(__dirname, '../static/test-img.jpg')),
+  size: 798,
+} as Express.Multer.File;

@@ -60,7 +60,7 @@ describe('Auth e2e', () => {
       .expect(({ body, header }: { body: SignupResponseDto, header: any }) => {
         expect(typeof body.id).toBe('number');
         expect(body.admin).toBeFalsy();
-        expect(body.roles).toContain('Reader');
+        expect(body.roles).toContain('User');
         expect(typeof body.accessToken).toBe('string');
 
         accessToken = body.accessToken;
@@ -102,7 +102,7 @@ describe('Auth e2e', () => {
       .expect(({ body, header }: { body: LoginResponseDto, header: any }) => {
         expect(typeof body.id).toBe('number');
         expect(body.admin).toBeFalsy();
-        expect(body.roles).toContain('Reader');
+        expect(body.roles).toContain('User');
         expect(body.username).toBe(signupDto.username);
         expect(typeof body.accessToken).toBe('string');
 
@@ -140,7 +140,7 @@ describe('Auth e2e', () => {
       .expect(({ body, header }: { body: LoginResponseDto, header: any }) => {
         expect(typeof body.id).toBe('number');
         expect(body.admin).toBeFalsy();
-        expect(body.roles).toContain('Reader');
+        expect(body.roles).toContain('User');
         expect(body.username).toBe(signupDto.username);
         expect(typeof body.accessToken).toBe('string');
 

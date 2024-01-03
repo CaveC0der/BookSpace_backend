@@ -40,7 +40,7 @@ export class GenresController {
 
   @ApiOperation({ summary: 'create genre (admin)' })
   @ApiResponse({ status: 201, type: GenreModel })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Post()
   async create(@Body() dto: GenreCreationDto) {
     return this.genresService.create(dto);
@@ -63,7 +63,7 @@ export class GenresController {
   }
 
   @ApiOperation({ summary: 'update genre (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Put(':id')
   async update(@Param('id') name: string,
                @Body() dto: GenreUpdateDto) {
@@ -71,7 +71,7 @@ export class GenresController {
   }
 
   @ApiOperation({ summary: 'delete genre (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Delete(':id')
   async delete(@Param('id') name: string) {
     await this.genresService.delete(name);

@@ -42,7 +42,7 @@ export class ReviewsController {
 
   @ApiOperation({ summary: 'create review' })
   @ApiResponse({ status: 201, type: ReviewModel })
-  @Roles(Role.Reader)
+  @Roles([Role.User], [Role.Restricted])
   @Post()
   async create(@TokenPayload('id') id: number,
                @Body() dto: ReviewCreationDto) {
@@ -51,7 +51,7 @@ export class ReviewsController {
 
   @ApiOperation({ summary: 'get review' })
   @ApiResponse({ status: 200, type: ReviewModel })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Get('me-:id')
   async getMY(@TokenPayload('id') id: number,
               @Param('id', ParseIntPipe) bookId: number) {
@@ -59,7 +59,7 @@ export class ReviewsController {
   }
 
   @ApiOperation({ summary: 'update review' })
-  @Roles(Role.Reader)
+  @Roles([Role.User], [Role.Restricted])
   @Put('me-:id')
   async updateMy(@TokenPayload('id') id: number,
                  @Param('id', ParseIntPipe) bookId: number,
@@ -68,7 +68,7 @@ export class ReviewsController {
   }
 
   @ApiOperation({ summary: 'delete review' })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Delete('me-:id')
   async deleteMy(@TokenPayload('id') id: number,
                  @Param('id', ParseIntPipe) bookId: number) {
@@ -84,7 +84,7 @@ export class ReviewsController {
   }
 
   @ApiOperation({ summary: 'delete review (admin)' })
-  @Roles(Role.Admin)
+  @Roles([Role.Admin])
   @Delete(':userId-:bookId')
   async deleteUserReview(@TokenPayload() payload: TokenPayloadT,
                          @Param('userId', ParseIntPipe) userId: number,
@@ -103,7 +103,7 @@ export class ReviewsController {
 
   @ApiOperation({ summary: 'get user reviews' })
   @ApiResponse({ status: 200, type: [ReviewModel] })
-  @Roles(Role.Reader)
+  @Roles([Role.User])
   @Get('users/:id')
   async getUserReviews(@Param('id', ParseIntPipe) userId: number,
                        @Query() dto: ReviewsQueryDto) {

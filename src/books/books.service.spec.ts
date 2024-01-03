@@ -3,7 +3,7 @@ import { getModelToken } from '@nestjs/sequelize';
 import * as bcryptjs from 'bcryptjs';
 import {
   BadRequestException,
-  ForbiddenException,
+  ForbiddenException, HttpException,
   InternalServerErrorException,
   Logger,
   NotFoundException,
@@ -270,7 +270,7 @@ describe('BooksService', () => {
     it('update failed', async () => {
       mockBook.update.mockImplementationOnce(() => { throw new Error(); });
 
-      await expect(service.setCover(mockBook.authorId, mockBook.id, mockFile)).rejects.toThrow(BadRequestException);
+      await expect(service.setCover(mockBook.authorId, mockBook.id, mockFile)).rejects.toThrow(HttpException);
     });
   });
 
@@ -308,7 +308,7 @@ describe('BooksService', () => {
     it('update failed', async () => {
       mockBook.update.mockImplementationOnce(() => { throw new Error(); });
 
-      await expect(service.deleteCover(mockBook.authorId, mockBook.id)).rejects.toThrow(BadRequestException);
+      await expect(service.deleteCover(mockBook.authorId, mockBook.id)).rejects.toThrow(HttpException);
     });
   });
 
