@@ -69,6 +69,7 @@ FOR EACH ROW
 WHEN (OLD.rating IS DISTINCT FROM NEW.rating)
 EXECUTE FUNCTION after_update_book_tg();
 
+
 CREATE OR REPLACE FUNCTION after_destroy_book_tg()
     RETURNS TRIGGER AS $$
 BEGIN
@@ -203,6 +204,7 @@ AFTER DELETE
 ON comments
 FOR EACH ROW
 EXECUTE FUNCTION after_destroy_comment_tg();
+
 
 CREATE OR REPLACE FUNCTION after_create_view_tg()
     RETURNS TRIGGER AS $$

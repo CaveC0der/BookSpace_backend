@@ -1,8 +1,6 @@
-
 # BookSpace REST API
 
 Backend for future BookSpace web app
-
 
 ## Tech Stack
 
@@ -12,13 +10,13 @@ Backend for future BookSpace web app
 
 ## Run Locally
 
-- Install dependencies
+**Install dependencies**
 
 ```bash
   npm install
 ```
 
-- Create .env file with the following variables
+**Create .env file with the following variables**
 
 `NODE_ENV`
 
@@ -50,16 +48,17 @@ Backend for future BookSpace web app
 `THROTTLER_TTL`
 `THROTTLER_LIMIT`
 
-Check src/shared/joi/config-validation-schema.ts
+*Check src/shared/joi/config-validation-schema.ts*
 
-- Run SQL from sql/start.sql
+**Create a folder for serving static content with the name used as value for `SERVE_STATIC_FOLDER`**
 
-- Start the server
+**Run SQL from sql/start.sql**
+
+**Start the server**
 
 ```bash
   npm run start
 ```
-
 
 ## Documentation
 
