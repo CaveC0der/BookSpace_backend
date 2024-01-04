@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Op, ValidationError } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import GenreModel from './models/genre.model';
@@ -35,9 +35,8 @@ export class GenresService {
   }
 
   async update(name: string, description: string) {
-    const updated = await this.genreRepo.update({ description }, { where: { name } });
+    const [updated] = await this.genreRepo.update({ description }, { where: { name } });
     if (!updated) {
-      Logger.error(`updateGenre(${name}) failed`, GenresService.name);
       throw new NotFoundException();
     }
   }
@@ -45,7 +44,6 @@ export class GenresService {
   async delete(name: string) {
     const destroyed = await this.genreRepo.destroy({ where: { name } });
     if (!destroyed) {
-      Logger.error(`deleteGenre(${name}) failed`, GenresService.name);
       throw new NotFoundException();
     }
   }
@@ -60,7 +58,9 @@ export class GenresService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractBooksOrder(dto),
-      include: dto.eager ? [UserModel] : undefined,
+      include: dto.eager
+        ? [{ as: 'author', model: UserModel, attributes: ['id', 'username'] }, GenreModel]
+        : [GenreModel],
     });
   }
 }

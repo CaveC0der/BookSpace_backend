@@ -21,6 +21,7 @@ import RolesGuard from '../../roles/roles.guard';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 import RoleDto from '../../roles/dtos/role.dto';
+import FindUsersQueryDto from '../dtos/find-users-query.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -34,6 +35,14 @@ import RoleDto from '../../roles/dtos/role.dto';
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @ApiOperation({ summary: 'get users (admin)' })
+  @ApiResponse({ status: 200, type: [UserModel] })
+  @Roles([Role.Admin])
+  @Get()
+  async getUsers(@Query() dto: FindUsersQueryDto) {
+    return this.usersService.find(dto);
+  }
 
   @ApiOperation({ summary: 'get user (public)' })
   @ApiResponse({ status: 200, type: UserModel })

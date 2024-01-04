@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import ReviewModel from './review.model';
 import { ValidationError } from 'sequelize';
@@ -32,12 +32,11 @@ export class ReviewsService {
   }
 
   async update(userId: number, bookId: number, dto: ReviewUpdateT) {
-    const updated = await this.reviewRepo.update(
+    const [updated] = await this.reviewRepo.update(
       { rate: dto.rate, text: dto.text },
       { where: { userId, bookId } },
     );
     if (!updated) {
-      Logger.error(`updateReview(${userId}, ${bookId}) failed`, ReviewsService.name);
       throw new NotFoundException();
     }
   }
@@ -49,7 +48,6 @@ export class ReviewsService {
 
     const destroyed = await this.reviewRepo.destroy({ where: { userId, bookId } });
     if (!destroyed) {
-      Logger.error(`deleteReview(${userId}, ${bookId}) failed`, ReviewsService.name);
       throw new NotFoundException();
     }
   }

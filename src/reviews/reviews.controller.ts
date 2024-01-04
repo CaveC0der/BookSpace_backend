@@ -53,7 +53,7 @@ export class ReviewsController {
   @ApiResponse({ status: 200, type: ReviewModel })
   @Roles([Role.User])
   @Get('me-:id')
-  async getMY(@TokenPayload('id') id: number,
+  async getMy(@TokenPayload('id') id: number,
               @Param('id', ParseIntPipe) bookId: number) {
     return this.reviewsService.get(id, bookId);
   }

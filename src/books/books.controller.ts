@@ -57,7 +57,10 @@ export class BooksController {
   @ApiResponse({ status: 200, type: [BookModel] })
   @Public()
   @Get()
-  async getBooks(@Query() dto: FindBooksQueryDto) {
+  async getBooks(@TokenPayload('admin') admin: boolean,
+                 @Query() dto: FindBooksQueryDto) {
+    dto.paranoid = admin ? dto.paranoid : undefined;
+
     return this.booksService.find(dto);
   }
 

@@ -100,6 +100,8 @@ export default class BookModel extends Model<BookModel, BookCreationT> {
   @UpdatedAt
   updatedAt: Date;
 
+  @ApiProperty({ type: Date, nullable: true })
+  @Expose()
   @DeletedAt
   deletedAt: Date | null;
 }

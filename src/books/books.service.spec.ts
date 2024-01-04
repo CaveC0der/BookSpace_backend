@@ -3,7 +3,8 @@ import { getModelToken } from '@nestjs/sequelize';
 import * as bcryptjs from 'bcryptjs';
 import {
   BadRequestException,
-  ForbiddenException, HttpException,
+  ForbiddenException,
+  HttpException,
   InternalServerErrorException,
   Logger,
   NotFoundException,
@@ -18,7 +19,6 @@ import { FilesService } from '../files/files.service';
 import { GenresService } from '../genres/genres.service';
 import GenreModel from '../genres/models/genre.model';
 import UserModel from '../users/user.model';
-import iLike from '../shared/utils/i-like';
 
 describe('BooksService', () => {
   let service: BooksService;
@@ -313,7 +313,7 @@ describe('BooksService', () => {
   });
 
   describe('addGenres / removeGenres', () => {
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.addGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).resolves.toBeUndefined();
       await expect(service.removeGenres(mockBook.authorId, mockBook.id, ['Fantasy'])).resolves.toBeUndefined();
     });
@@ -355,7 +355,7 @@ describe('BooksService', () => {
   describe('find', () => {
     let dto: FindBooksQueryDto = {};
 
-    it('normal', async () => {
+    it('success', async () => {
       await expect(service.find({})).resolves.toBeInstanceOf(Array);
     });
 
@@ -364,7 +364,7 @@ describe('BooksService', () => {
       await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: iLike(dto.name!) },
+        where: { name: { [Op.iLike]: '%' + dto.name + '%' } },
         include: GenreModel,
         limit: undefined,
         offset: undefined,
@@ -377,7 +377,7 @@ describe('BooksService', () => {
       await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: iLike(dto.name!, dto.nameMode) },
+        where: { name: { [Op.iLike]: dto.name + '%' } },
         include: GenreModel,
         limit: undefined,
         offset: undefined,
@@ -395,7 +395,7 @@ describe('BooksService', () => {
           as: 'author',
           model: UserModel,
           attributes: ['id', 'username'],
-          where: { username: iLike(dto.author!) },
+          where: { username: { [Op.iLike]: '%' + dto.author + '%' } },
         }, GenreModel],
         limit: undefined,
         offset: undefined,
@@ -413,7 +413,7 @@ describe('BooksService', () => {
           as: 'author',
           model: UserModel,
           attributes: ['id', 'username'],
-          where: { username: iLike(dto.author!, dto.authorMode) },
+          where: { username: { [Op.iLike]: '%' + dto.author } },
         }, GenreModel],
         limit: undefined,
         offset: undefined,
@@ -439,7 +439,7 @@ describe('BooksService', () => {
       await service.find(dto);
 
       expect(mockBookRepo.findAll).toHaveBeenCalledWith({
-        where: { name: iLike(dto.name!), id: { [Op.in]: [1] } },
+        where: { name: { [Op.iLike]: '%' + dto.name + '%' }, id: { [Op.in]: [1] } },
         include: GenreModel,
         limit: undefined,
         offset: undefined,

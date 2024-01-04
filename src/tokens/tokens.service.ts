@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import TokenModel from './token.model';
@@ -43,7 +43,6 @@ export class TokensService {
   async deleteRefreshToken(id: number) {
     const destroyed = await this.tokenRepo.destroy({ where: { userId: id } });
     if (!destroyed) {
-      Logger.error(`deleteRefreshToken(${id}) failed`, TokensService.name);
       throw new NotFoundException();
     }
   }

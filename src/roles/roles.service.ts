@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import RoleModel from './models/role.model';
 import { Role } from './role.enum';
@@ -18,9 +18,8 @@ export class RolesService {
   }
 
   async update(name: Role, description: string) {
-    const updated = await this.roleRepo.update({ description }, { where: { name } });
+    const [updated] = await this.roleRepo.update({ description }, { where: { name } });
     if (!updated) {
-      Logger.error(`updateRole(${name}) failed`, RolesService.name);
       throw new NotFoundException();
     }
   }

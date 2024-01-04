@@ -61,7 +61,7 @@ export class ConfigService {
   }
 
   get SERVE_STATIC_PREFIX(): string {
-    return this.defaultConfigService.getOrThrow('SERVE_STATIC_PREFIX');
+    return '/' + this.defaultConfigService.getOrThrow('SERVE_STATIC_PREFIX');
   }
 
   get THROTTLER_OPTIONS(): ThrottlerOptions {

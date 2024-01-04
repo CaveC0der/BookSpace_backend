@@ -102,6 +102,8 @@ export default class UserModel extends Model<UserModel, UserCreationT> {
   @UpdatedAt
   updatedAt: Date;
 
+  @ApiProperty({ type: Date, nullable: true })
+  @Expose()
   @DeletedAt
   deletedAt: Date | null;
 }

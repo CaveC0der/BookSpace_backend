@@ -186,6 +186,7 @@ export class BooksService {
       include: (dto.author || dto.eager)
         ? [{ as: 'author', model: UserModel, attributes: ['id', 'username'], where: userWhere }, GenreModel]
         : GenreModel,
+      paranoid: dto.paranoid,
     });
   }
 }

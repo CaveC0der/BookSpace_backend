@@ -112,6 +112,11 @@ export const commentCreationDto: CommentCreationDto = {
   text: 'Quite good...',
 };
 
+export const comment2CreationDto: CommentCreationDto = {
+  bookId: 0,
+  text: 'Boring...',
+};
+
 export const commentUpdateDto: CommentUpdateT = {
   text: 'More than good...',
 };

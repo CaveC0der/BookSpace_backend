@@ -7,7 +7,7 @@ import { Cons } from '../role.constraint';
 export class UserRoleModel extends Model {
   @ForeignKey(() => UserModel)
   @Column({ type: DataType.INTEGER, primaryKey: true })
-  id: number;
+  userId: number;
 
   @ForeignKey(() => RoleModel)
   @Column({ type: DataType.STRING(Cons.name.max), primaryKey: true })

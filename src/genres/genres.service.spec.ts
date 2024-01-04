@@ -23,7 +23,7 @@ describe('GenreService', () => {
   };
   const mockGenres = [{ name: mockGenre.name }, { name: 'Romance' }, { name: 'Drama' }];
   const returnMockGenre = jest.fn().mockImplementation(() => mockGenre);
-  const returnAffectedMockGenres = jest.fn().mockImplementation(() => 1);
+  const returnAffectedMockGenres = jest.fn().mockImplementation(() => [1]);
   const mockGenreRepo = {
     create: returnMockGenre,
     findByPk: returnMockGenre,
@@ -120,7 +120,7 @@ describe('GenreService', () => {
     });
 
     it('not found', async () => {
-      mockGenreRepo.update.mockImplementationOnce(() => 0);
+      mockGenreRepo.update.mockImplementationOnce(() => [0]);
 
       await expect(service.update(mockGenre.name, '')).rejects.toThrow(NotFoundException);
     });
@@ -141,6 +141,13 @@ describe('GenreService', () => {
   describe('getGenreBooks', () => {
     it('success', async () => {
       await expect(service.getGenreBooks(mockGenre.name, {})).resolves.toBeInstanceOf(Array);
+
+      expect(mockGenre.$get).toHaveBeenCalledWith('books', {
+        include: [GenreModel],
+        limit: undefined,
+        offset: undefined,
+        order: undefined,
+      });
     });
 
     it('role not found', async () => {
@@ -154,7 +161,7 @@ describe('GenreService', () => {
       await service.getGenreBooks(mockGenre.name, dto);
 
       expect(mockGenre.$get).toHaveBeenCalledWith('books', {
-        include: [UserModel],
+        include: [{ as: 'author', model: UserModel, attributes: ['id', 'username'] }, GenreModel],
         limit: undefined,
         offset: undefined,
         order: undefined,

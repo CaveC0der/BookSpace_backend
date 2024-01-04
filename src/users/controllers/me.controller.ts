@@ -23,6 +23,7 @@ import BooksQueryDto from '../../books/dtos/books-query.dto';
 import { UsersService } from '../users.service';
 import AuthGuard from '../../auth/guards/auth.guard';
 import RolesGuard from '../../roles/roles.guard';
+import { TokenPayloadT } from '../../tokens/types/token-payload.type';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -83,8 +84,10 @@ export class MeController {
   @ApiResponse({ status: 200, type: [BookModel] })
   @Roles([Role.User])
   @Get('books/viewed')
-  async getViewedBooks(@TokenPayload('id') id: number,
+  async getViewedBooks(@TokenPayload() payload: TokenPayloadT,
                        @Query() dto: BooksQueryDto) {
-    return this.usersService.getBooks(id, 'viewed', dto);
+    dto.paranoid = payload.admin ? dto.paranoid : undefined;
+
+    return this.usersService.getBooks(payload.id, 'viewed', dto);
   }
 }

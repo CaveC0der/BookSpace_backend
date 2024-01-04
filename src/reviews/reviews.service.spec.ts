@@ -22,12 +22,11 @@ describe('ReviewsService', () => {
     text: 'That was wonderful',
   };
   const returnMockReview = jest.fn().mockImplementation(() => mockReview);
-  const returnAffectedMockReviews = jest.fn().mockImplementation(() => 1);
   const mockReviewRepo = {
     create: returnMockReview,
     findOne: returnMockReview,
-    update: returnAffectedMockReviews,
-    destroy: returnAffectedMockReviews,
+    update: jest.fn().mockImplementation(() => [1]),
+    destroy: jest.fn().mockImplementation(() => 1),
     findAll: jest.fn().mockImplementation(() => [mockReview]),
   };
   const mockValidationError = new ValidationError('mock validation failed', [{
@@ -95,7 +94,7 @@ describe('ReviewsService', () => {
     });
 
     it('not found', async () => {
-      mockReviewRepo.update.mockImplementationOnce(() => 0);
+      mockReviewRepo.update.mockImplementationOnce(() => [0]);
 
       await expect(service.update(mockUser.id, mockReview.bookId, { rate: 4 })).rejects.toThrow(NotFoundException);
     });

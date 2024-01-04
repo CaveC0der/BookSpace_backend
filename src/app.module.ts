@@ -42,7 +42,6 @@ import { FilesModule } from './files/files.module';
           GenreModel, BookGenreModel, ViewModel, ReviewModel, CommentModel,
         ],
         logging: sql => Logger.log(sql, SequelizeModule.name),
-        // autoLoadModels: true, sync: { force: true },
       }),
     }),
     ThrottlerModule.forRootAsync({

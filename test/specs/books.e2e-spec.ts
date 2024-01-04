@@ -57,6 +57,7 @@ describe('Books e2e', () => {
   let book: BookModel;
   let book2: BookModel;
   let book3: BookModel;
+  let nonExistentId: number;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -110,6 +111,8 @@ describe('Books e2e', () => {
 
     book2 = await booksService.create(author2.model.id, book2CreationDto);
     book3 = await booksService.create(restricted.model.id, book3CreationDto);
+
+    nonExistentId = book3.id + 404;
   });
 
   describe('(POST) /books', () => {
@@ -168,9 +171,13 @@ describe('Books e2e', () => {
   });
 
   describe('(GET) /books', () => {
+    beforeAll(async () => {
+      await booksService.delete(author2.model.id, book2.id);
+    });
+
     it('invalid query', () => request(server)
       .get('/books')
-      .query({ orderBy: 'invalidOrder', mode: 'invalidMode' })
+      .query({ orderBy: 'invalidOrder', nameMode: 'invalidMode' })
       .expect(400),
     );
 
@@ -178,8 +185,9 @@ describe('Books e2e', () => {
       .get('/books')
       .query({ name: 'DoesNotExist' } as FindBooksQueryDto)
       .expect(200)
-      .expect(({ body }) => {
-        expect(body).toEqual([]);
+      .expect(({ body }: { body: BookModel[] }) => {
+        expect(body).toBeInstanceOf(Array);
+        expect(body).toHaveLength(0);
       }),
     );
 
@@ -191,21 +199,59 @@ describe('Books e2e', () => {
         expect(body).toBeInstanceOf(Array);
         const names = body.map(b => b.name);
         expect(names).toContain(bookCreationDto.name);
-        expect(names).toContain(book2CreationDto.name);
+        expect(names).not.toContain(book2CreationDto.name);
         expect(names).toContain(book3CreationDto.name);
+        const _book = body.find(b => b.name === bookCreationDto.name)!;
+        expect(_book.author).toBeUndefined();
+        expect(_book.deletedAt).toBeNull();
+        expect(_book.genres).toBeInstanceOf(Array);
       }),
     );
+
+    it('success with eager loading', () => request(server)
+      .get('/books')
+      .query({ name: 'B', limit: 10, eager: true } as FindBooksQueryDto)
+      .expect(200)
+      .expect(({ body }: { body: BookModel[] }) => {
+        expect(body).toBeInstanceOf(Array);
+        const names = body.map(b => b.name);
+        expect(names).toContain(bookCreationDto.name);
+        expect(names).not.toContain(book2CreationDto.name);
+        expect(names).toContain(book3CreationDto.name);
+        const _book = body.find(b => b.name === bookCreationDto.name)!;
+        expect(_book.author!.id).toBe(author.model.id);
+        expect(_book.deletedAt).toBeNull();
+        expect(_book.genres).toBeInstanceOf(Array);
+      }),
+    );
+
+    it('success with paranoid', () => request(server)
+      .get('/books')
+      .query({ name: 'B', limit: 10, eager: true, paranoid: false } as FindBooksQueryDto)
+      .set('authorization', `Bearer ${admin.accessToken}`)
+      .expect(200)
+      .expect(({ body }: { body: BookModel[] }) => {
+        expect(body).toBeInstanceOf(Array);
+        const names = body.map(b => b.name);
+        expect(names).toContain(bookCreationDto.name);
+        expect(names).toContain(book2CreationDto.name);
+        expect(names).toContain(book3CreationDto.name);
+        const _book = body.find(b => b.name === book2CreationDto.name)!;
+        expect(_book.author!.id).toBe(author2.model.id);
+        expect(_book.deletedAt).not.toBeNull();
+        expect(_book.genres).toBeInstanceOf(Array);
+      }),
+    );
+
+    afterAll(async () => {
+      await booksService.restore(author2.model.id, book2.id);
+    });
   });
 
   describe('(GET) /books/:id', () => {
     it('not found', () => request(server)
-      .get('/books/404')
+      .get(`/books/${nonExistentId}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .get('/books/invalid')
-      .expect(400),
     );
 
     it('success', () => request(server)
@@ -221,15 +267,9 @@ describe('Books e2e', () => {
 
   describe('(PUT) /books/:id', () => {
     it('not found', () => request(server)
-      .put('/books/404')
+      .put(`/books/${nonExistentId}`)
       .set('authorization', `Bearer ${author.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .put('/books/invalid')
-      .set('authorization', `Bearer ${author.accessToken}`)
-      .expect(400),
     );
 
     it('not an author', () => request(server)
@@ -248,6 +288,13 @@ describe('Books e2e', () => {
       .put(`/books/${book3.id}`)
       .set('authorization', `Bearer ${restricted.accessToken}`)
       .expect(403),
+    );
+
+    it('invalid data', () => request(server)
+      .put(`/books/${book.id}`)
+      .set('authorization', `Bearer ${author.accessToken}`)
+      .send({ name: '' } as BookUpdateDto)
+      .expect(400),
     );
 
     it('success - author', () => request(server)
@@ -275,15 +322,9 @@ describe('Books e2e', () => {
 
   describe('(DELETE) /books/:id', () => {
     it('not found', () => request(server)
-      .delete('/books/404')
+      .delete(`/books/${nonExistentId}`)
       .set('authorization', `Bearer ${author2.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .delete('/books/invalid')
-      .set('authorization', `Bearer ${author2.accessToken}`)
-      .expect(400),
     );
 
     it('not an author', () => request(server)
@@ -328,15 +369,9 @@ describe('Books e2e', () => {
 
   describe('(POST) /books/:id', () => {
     it('not found', () => request(server)
-      .post('/books/404')
+      .post(`/books/${nonExistentId}`)
       .set('authorization', `Bearer ${admin.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .post('/books/invalid')
-      .set('authorization', `Bearer ${admin.accessToken}`)
-      .expect(400),
     );
 
     it('restricted', () => request(server)
@@ -366,15 +401,9 @@ describe('Books e2e', () => {
 
   describe('(POST) /books/:id/cover', () => {
     it('not found', () => request(server)
-      .post('/books/404/cover')
+      .post(`/books/${nonExistentId}/cover`)
       .set('authorization', `Bearer ${author.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .post('/books/invalid/cover')
-      .set('authorization', `Bearer ${author.accessToken}`)
-      .expect(400),
     );
 
     it('not an author', () => request(server)
@@ -418,15 +447,9 @@ describe('Books e2e', () => {
     });
 
     it('not found', () => request(server)
-      .delete('/books/404/cover')
+      .delete(`/books/${nonExistentId}/cover`)
       .set('authorization', `Bearer ${author2.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .delete('/books/invalid/cover')
-      .set('authorization', `Bearer ${author2.accessToken}`)
-      .expect(400),
     );
 
     it('not an author', () => request(server)
@@ -462,17 +485,10 @@ describe('Books e2e', () => {
 
   describe('(DELETE) /books/:id/genres', () => {
     it('not found', () => request(server)
-      .delete('/books/404/genres')
+      .delete(`/books/${nonExistentId}/genres`)
       .query({ names: genreCreationDto.name })
       .set('authorization', `Bearer ${author2.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .delete('/books/invalid/genres')
-      .query({ names: genreCreationDto.name })
-      .set('authorization', `Bearer ${author2.accessToken}`)
-      .expect(400),
     );
 
     it('not an author', () => request(server)
@@ -525,17 +541,10 @@ describe('Books e2e', () => {
 
   describe('(POST) /books/:id/genres', () => {
     it('not found', () => request(server)
-      .post('/books/404/genres')
+      .post(`/books/${nonExistentId}/genres`)
       .query({ names: genreCreationDto.name })
       .set('authorization', `Bearer ${author2.accessToken}`)
       .expect(404),
-    );
-
-    it('invalid path param', () => request(server)
-      .post('/books/invalid/genres')
-      .query({ names: genreCreationDto.name })
-      .set('authorization', `Bearer ${author2.accessToken}`)
-      .expect(400),
     );
 
     it('not an author', () => request(server)

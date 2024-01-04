@@ -1,23 +1,28 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import UserModel from './user.model';
 import { UserCreationT } from './types/user-creation.type';
-import { Includeable, ValidationError } from 'sequelize';
+import { col, fn, Includeable, Op, ValidationError, where } from 'sequelize';
 import UserUpdateDto from './dtos/user-update.dto';
 import * as bcryptjs from 'bcryptjs';
 import { ConfigService } from '../config/config.service';
 import { FilesService } from '../files/files.service';
 import { Role } from '../roles/role.enum';
 import RoleModel from '../roles/models/role.model';
-import { FindAttributeOptions } from 'sequelize/types/model';
-import BooksQueryDto from '../books/dtos/books-query.dto';
-import { extractBooksOrder } from '../shared/utils/extract-order';
+import { FindAttributeOptions, WhereOptions } from 'sequelize/types/model';
+import extractOrder, { extractBooksOrder } from '../shared/utils/extract-order';
 import GenreModel from '../genres/models/genre.model';
+import iLike from '../shared/utils/i-like';
+import { UserRoleModel } from '../roles/models/user-role.model';
+import FindUsersQueryDto from './dtos/find-users-query.dto';
+import BooksQueryDto from '../books/dtos/books-query.dto';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(UserModel)
               private userRepo: typeof UserModel,
+              @InjectModel(UserRoleModel)
+              private userRoleRepo: typeof UserRoleModel,
               private config: ConfigService,
               private filesService: FilesService) {}
 
@@ -60,12 +65,12 @@ export class UsersService {
   }
 
   async update(id: number, dto: UserUpdateDto) {
-    dto.password &&= await bcryptjs.hash(dto.password, this.config.SALT_LENGTH);
-
     const user = await this.userRepo.findByPk(id);
     if (!user) {
       throw new NotFoundException();
     }
+
+    dto.password &&= await bcryptjs.hash(dto.password, this.config.SALT_LENGTH);
 
     try {
       await user.update({ username: dto.username, email: dto.email, password: dto.password, bio: dto.bio });
@@ -79,7 +84,6 @@ export class UsersService {
   async delete(id: number, hard?: boolean) {
     const destroyed = await this.userRepo.destroy({ where: { id }, force: hard });
     if (!destroyed) {
-      Logger.error(`delete(${id}) failed`, UsersService.name);
       throw new NotFoundException();
     }
   }
@@ -119,6 +123,8 @@ export class UsersService {
 
     if (user.avatar) {
       await this.filesService.delete(user.avatar);
+    } else {
+      return;
     }
 
     try {
@@ -135,7 +141,8 @@ export class UsersService {
       limit: dto.limit,
       offset: dto.offset,
       order: extractBooksOrder(dto),
-      include: dto.eager ? GenreModel : undefined,
+      include: dto.eager ? [GenreModel] : undefined,
+      paranoid: dto.paranoid,
     });
   }
 
@@ -153,5 +160,36 @@ export class UsersService {
       throw new NotFoundException();
     }
     await user.$remove('roles', name);
+  }
+
+  async find(dto: FindUsersQueryDto) {
+    const userWhere: WhereOptions<UserModel> = {};
+    if (dto.username) {
+      userWhere.username = iLike(dto.username, dto.usernameMode);
+    }
+
+    if (dto.email) {
+      userWhere.email = iLike(dto.email, dto.emailMode);
+    }
+
+    if (dto.roles) {
+      userWhere.id = {
+        [Op.in]: (await this.userRoleRepo.findAll({
+          attributes: ['userId'],
+          where: { role: { [Op.in]: dto.roles } },
+          group: ['userId'],
+          having: where(fn('COUNT', col('role')), dto.roles.length),
+        })).map(ur => ur.userId),
+      };
+    }
+
+    return this.userRepo.findAll({
+      where: userWhere,
+      limit: dto.limit,
+      offset: dto.offset,
+      order: extractOrder(dto),
+      include: dto.eager ? RoleModel : undefined,
+      paranoid: dto.paranoid,
+    });
   }
 }

@@ -21,7 +21,7 @@ describe('RolesService', () => {
   };
   const mockRoleRepo = {
     findByPk: jest.fn().mockImplementation(() => mockRole),
-    update: jest.fn().mockImplementation(() => 1),
+    update: jest.fn().mockImplementation(() => [1]),
     findAll: jest.fn().mockImplementation(() => [mockRole]),
   };
 
@@ -63,7 +63,7 @@ describe('RolesService', () => {
     });
 
     it('not found', async () => {
-      mockRoleRepo.update.mockImplementationOnce(() => 0);
+      mockRoleRepo.update.mockImplementationOnce(() => [0]);
 
       await expect(service.update(mockRole.name, '')).rejects.toThrow(NotFoundException);
     });
